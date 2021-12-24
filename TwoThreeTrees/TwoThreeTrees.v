@@ -358,8 +358,98 @@ Module TwoThreeTrees.
 				end end end end
 			end.
 
+		Proposition insert_k1
+			(k1 : Keys.t) (v1 : Values.t)
+			: Coq.Init.Logic.eq
+				(insert (k1)(v1)(empty_tree))
+				(singleton_tree (k1)(v1)).
+		Proof.
+			reflexivity.
+		Qed.
+
+		Proposition insert_k1_k2
+			(k1 : Keys.t) (v1 : Values.t)
+			(k2 : Keys.t) (v2 : Values.t)
+			(k1_lt_k2 : Coq.Init.Logic.eq 
+				(Keys.ltb (k1)(k2)) (true))
+			(k2_nlt_k1 : Coq.Init.Logic.eq
+				(Keys.ltb (k2)(k1)) (false))
+			: Coq.Init.Logic.eq
+				(insert (k2)(v2)
+					(insert (k1)(v1)
+					(empty_tree)))
+				(doubleton_tree (k1)(v1)(k2)(v2)).
+		Proof.
+			try unfold insert.
+			try rewrite k1_lt_k2.
+			try rewrite k2_nlt_k1.
+			reflexivity.
+		Qed.
+
+		Proposition insert_k2_k1
+			(k1 : Keys.t) (v1 : Values.t)
+			(k2 : Keys.t) (v2 : Values.t)
+			(k1_lt_k2 : Coq.Init.Logic.eq 
+				(Keys.ltb (k1)(k2)) (true))
+			(k2_nlt_k1 : Coq.Init.Logic.eq
+				(Keys.ltb (k2)(k1)) (false))
+			: Coq.Init.Logic.eq
+				(insert (k1)(v1)
+					(insert (k2)(v2)
+					(empty_tree)))
+				(doubleton_tree (k1)(v1)(k2)(v2)).
+		Proof.
+			try unfold insert.
+			try rewrite k1_lt_k2.
+			try rewrite k2_nlt_k1.
+			reflexivity.
+		Qed.
+
+		(***************
+		Proposition insert_k1_k2
+			(k1 : Keys.t) (v1 : Values.t)
+			(k2 : Keys.t) (v2 : Values.t)
+			(k1_lt_k2 : Coq.Init.Logic.eq 
+				(true) (Keys.ltb (k1) (k2)))
+			(k2_nlt_k1 : Coq.Init.Logic.eq
+				(false) (Keys.ltb (k2) (k1)))
+			: Coq.Init.Logic.eq
+				(insert (k2)(v2)
+					(insert (k1)(v1)(empty_tree)))
+				(doubleton_tree (k1)(v1)(k2)(v2)).
+		Proof.
+			reflexivity.
+		Qed.
+		***************)
 	End Trees.
+
 
 End TwoThreeTrees.
 
+Module NatNatTrees := TwoThreeTrees.Trees (Coq.Init.Nat) (Coq.Init.Nat).
 
+(*****************
+Proposition insert_k1_k2
+	(k1 : Coq.Init.Nat.t) (v1 : Coq.Init.Nat.t)
+	(k2 : Coq.Init.Nat.t) (v2 : Coq.Init.Nat.t)
+	(k1_lt_k2 : Coq.Init.Logic.eq 
+		(true) (Coq.Init.Nat.ltb (k1) (k2)))
+	(k2_nlt_k1 : Coq.Init.Logic.eq
+		(false) (Coq.Init.Nat.ltb (k2) (k1)))
+	: Coq.Init.Logic.eq
+		(NatNatTrees.insert (k2)(v2)
+			(NatNatTrees.insert (k1)(v1)
+			(NatNatTrees.empty_tree)))
+		(NatNatTrees.doubleton_tree
+			(k1)(v1)(k2)(v2)).
+Proof.
+	unfold NatNatTrees.insert.
+	unfold Nat.ltb in k1_lt_k2.
+	unfold Nat.ltb in k2_nlt_k1.
+
+
+
+
+	reflexivity.
+Qed.
+*************)
