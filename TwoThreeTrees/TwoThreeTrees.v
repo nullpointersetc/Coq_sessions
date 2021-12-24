@@ -1,455 +1,331 @@
-Require Coq.Structures.Equalities.
 Require Coq.Structures.Orders.
+Require Coq.Structures.Equalities.
 
 Module TwoThreeTrees.
+
 	Module Trees
-		(Keys : Coq.Structures.Orders.LtBool)
+		(Keys : Coq.Structures.Equalities.Typ)
+		(KeyLtb : Coq.Structures.Orders.HasLtb(Keys))
 		(Values : Coq.Structures.Equalities.Typ)
+		(ValueEqb : Coq.Structures.Equalities.HasEqb(Values))
 		<: Coq.Structures.Equalities.Typ.
 
-		Inductive node_t : Type
-			:= binary_node
-				: node_t
+		Inductive tree_t :=
+			empty_tree : tree_t
+			| singleton_tree : singleton_leaf_t -> tree_t
+			| doubleton_tree : doubleton_leaf_t -> tree_t
+			| singleton_root : singleton_node_t -> tree_t
+			| doubleton_root : doubleton_node_t -> tree_t
+		with node_t :=
+			singleton_node : singleton_node_t -> node_t
+			| doubleton_node : doubleton_node_t -> node_t
+			| singleton_leaf : singleton_leaf_t -> node_t
+			| doubleton_leaf : doubleton_leaf_t -> node_t
+		with singleton_node_t :=
+			singleton_node_v : node_t
 				-> Keys.t -> Values.t
-				-> node_t -> node_t
-			| ternary_node
-				: node_t
+				-> node_t -> singleton_node_t
+		with doubleton_node_t :=
+			doubleton_node_v : node_t
 				-> Keys.t -> Values.t
 				-> node_t
 				-> Keys.t -> Values.t
-				-> node_t -> node_t
-			| singleton_leaf
-				: Keys.t -> Values.t -> node_t
-			| doubleton_leaf
-				: Keys.t -> Values.t
-				-> Keys.t -> Values.t -> node_t.
+				-> node_t -> doubleton_node_t
+		with singleton_leaf_t :=
+			singleton_leaf_v : Keys.t -> Values.t
+				-> singleton_leaf_t
+		with doubleton_leaf_t :=
+			doubleton_leaf_v : Keys.t -> Values.t
+				-> Keys.t -> Values.t
+				-> doubleton_leaf_t.
 
-		Inductive tree_t : Type
-			:= empty_tree
-				: tree_t
-			| singleton_tree
-				: Keys.t -> Values.t -> tree_t
-			| doubleton_tree
-				: Keys.t -> Values.t
-				-> Keys.t -> Values.t -> tree_t
-			| binary_root
-				: node_t -> Keys.t -> Values.t
-				-> node_t -> tree_t
-			| ternary_root
-				: node_t -> Keys.t -> Values.t
-				-> node_t -> Keys.t -> Values.t
-				-> node_t -> tree_t.
+		Fixpoint left_sn (sn : singleton_node_t)
+			: node_t
+			:= match sn
+			with singleton_node_v (_ as left) (_) (_) (_)
+			=> left
+			end.
+
+		Fixpoint key_sn (sn : singleton_node_t)
+			: Keys.t
+			:= match sn
+			with singleton_node_v (_) (_ as key) (_) (_)
+			=> key
+			end.
+
+		Fixpoint value_sn (sn : singleton_node_t)
+			: Values.t
+			:= match sn
+			with singleton_node_v (_) (_) (_ as value) (_)
+			=> value
+			end.
+
+		Fixpoint right_sn (sn : singleton_node_t)
+			: node_t
+			:= match sn
+			with singleton_node_v (_) (_) (_) (_ as right)
+			=> right
+			end.
+
+		Fixpoint left_dn (dn : doubleton_node_t)
+			: node_t
+			:= match dn
+			with doubleton_node_v
+				(_ as left) (_) (_) (_) (_) (_) (_)
+			=> left
+			end.
+
+		Fixpoint first_key_dn (dn : doubleton_node_t)
+			: Keys.t
+			:= match dn
+			with doubleton_node_v
+				(_) (_ as key) (_) (_) (_) (_) (_)
+			=> key
+			end.
+
+		Fixpoint first_value_dn (dn : doubleton_node_t)
+			: Values.t
+			:= match dn
+			with doubleton_node_v
+				(_) (_) (_ as value) (_) (_) (_) (_)
+			=> value
+			end.
+
+		Fixpoint middle_dn (dn : doubleton_node_t)
+			: node_t
+			:= match dn
+			with doubleton_node_v
+				(_) (_) (_) (_ as middle) (_) (_) (_)
+			=> middle
+			end.
+
+		Fixpoint second_key_dn (dn : doubleton_node_t)
+			: Keys.t
+			:= match dn
+			with doubleton_node_v
+				(_) (_) (_) (_) (_ as key) (_) (_)
+			=> key
+			end.
+
+		Fixpoint second_value_dn (dn : doubleton_node_t)
+			: Values.t
+			:= match dn
+			with doubleton_node_v
+				(_) (_) (_) (_) (_) (_ as value) (_)
+			=> value
+			end.
+
+		Fixpoint right_dn (dn : doubleton_node_t)
+			: node_t
+			:= match dn
+			with doubleton_node_v
+				(_) (_) (_) (_) (_) (_) (_ as right)
+			=> right
+			end.
+
+		Fixpoint key_sl (sl : singleton_leaf_t)
+			: Keys.t
+			:= match sl
+			with singleton_leaf_v (_ as key) (_)
+			=> key
+			end.
+
+		Fixpoint value_sl (sl : singleton_leaf_t)
+			: Values.t
+			:= match sl
+			with singleton_leaf_v (_) (_ as value)
+			=> value
+			end.
+
+		Fixpoint first_key_dl (dl : doubleton_leaf_t)
+			: Keys.t
+			:= match dl
+			with doubleton_leaf_v (_ as key) (_) (_) (_)
+			=> key
+			end.
+
+		Fixpoint first_value_dl (dl : doubleton_leaf_t)
+			: Values.t
+			:= match dl
+			with doubleton_leaf_v (_) (_ as value) (_) (_)
+			=> value
+			end.
+
+		Fixpoint second_key_dl (dl : doubleton_leaf_t)
+			: Keys.t
+			:= match dl
+			with doubleton_leaf_v (_) (_) (_ as key) (_)
+			=> key
+			end.
+
+		Fixpoint second_value_dl (dl : doubleton_leaf_t)
+			: Values.t
+			:= match dl
+			with doubleton_leaf_v (_) (_) (_) (_ as value)
+			=> value
+			end.
 
 		Definition t := tree_t.
 
-		Definition empty := empty_tree.
-
-		Definition insert (k : Keys.t)
-			(v : Values.t)
-			(t : tree_t)
-			: tree_t
-			:= match t
-			with empty_tree
-			=> singleton_tree (k) (v)
-			| singleton_tree (k1) (v1)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> doubleton_tree (k) (v) (k1) (v1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.true
-				=> doubleton_tree (k1) (v1) (k) (v)
-				| Coq.Init.Datatypes.false
-				=> singleton_tree (k) (v)
-				end end
-			| doubleton_tree (k1) (v1) (k2) (v2)
-			=> binary_root
-					(singleton_leaf k1 v1)
-					(k) (v)
-					(singleton_leaf k2 v2)
-			| binary_root (ln) (k1) (v1) (rn)
-			=> empty_tree
-			| ternary_root (ln) (k1) (v1) (mn) (k2) (v2) (rn)
-			=> empty_tree
+		Fixpoint value_node (k : Keys.t) (node : node_t)
+			: Coq.Init.Datatypes.option (Values.t)
+			:= match node
+			with singleton_leaf (_ as sl)
+			=> match KeyLtb.ltb (k) (key_sl (sl))
+				with true
+				=> Coq.Init.Datatypes.None
+				| false
+				=> match KeyLtb.ltb (key_sl (sl)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(value_sl (sl))
+					| true
+					=> Coq.Init.Datatypes.None
+					end
+				end
+			| doubleton_leaf (_ as dl)
+			=> match KeyLtb.ltb (k) (first_key_dl (dl))
+				with true
+				=> Coq.Init.Datatypes.None
+				| false
+				=> match KeyLtb.ltb (first_key_dl (dl)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(first_value_dl (dl))
+					| true
+					=> match KeyLtb.ltb (k) (second_key_dl (dl))
+						with true
+						=> Coq.Init.Datatypes.None
+						| false
+						=> match KeyLtb.ltb (second_key_dl (dl)) (k)
+							with false
+							=> Coq.Init.Datatypes.Some
+								(second_value_dl (dl))
+							| true
+							=> Coq.Init.Datatypes.None
+							end
+						end
+					end
+				end
+			| singleton_node (_ as sn)
+			=> match KeyLtb.ltb (k) (key_sn (sn))
+				with true
+				=> value_node (k) (left_sn (sn))
+				| false
+				=> match KeyLtb.ltb (key_sn (sn)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(value_sn (sn))
+					| true
+					=> value_node (k) (right_sn (sn))
+					end
+				end
+			| doubleton_node (_ as dn)
+			=> match KeyLtb.ltb (k) (first_key_dn (dn))
+				with true
+				=> value_node (k) (left_dn (dn))
+				| false
+				=> match KeyLtb.ltb (first_key_dn (dn)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(first_value_dn (dn))
+					| true
+					=> match KeyLtb.ltb (k) (second_key_dn (dn))
+						with true
+						=> value_node (k) (middle_dn (dn))
+						| false
+						=> match KeyLtb.ltb (second_key_dn (dn)) (k)
+							with false
+							=> Coq.Init.Datatypes.Some
+								(second_value_dn (dn))
+							| true
+							=> value_node (k) (right_dn (dn))
+							end
+						end
+					end
+				end
 			end.
 
-		Fixpoint node_contains (k : Keys.t)
-			(n : node_t)
-			: Coq.Init.Datatypes.bool
-			:= match n
-			with binary_node (_ as n1)
-				(_ as k2) (_) (_ as n3)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> node_contains(k)(n3)
-				end end
-			| ternary_node (_ as n1)
-				(_ as k2) (_) (_ as n3)
-				(_ as k4) (_) (_ as n5)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k4)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n3)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k4)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> node_contains(k)(n5)
-				end end end end
-			| singleton_leaf (_ as k1) (_)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				end end
-			| doubleton_leaf
-				(_ as k1) (_) (_ as k2) (_)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				end end end end
+		Definition value (k : Keys.t) (tr : tree_t)
+			: Coq.Init.Datatypes.option (Values.t)
+			:= match tr
+			with empty_tree => Coq.Init.Datatypes.None
+			| singleton_tree (_ as sl)
+			=> match KeyLtb.ltb (k) (key_sl (sl))
+				with true
+				=> Coq.Init.Datatypes.None
+				| false
+				=> match KeyLtb.ltb (key_sl (sl)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(value_sl (sl))
+					| true
+					=> Coq.Init.Datatypes.None
+					end
+				end
+			| doubleton_tree (_ as dl)
+			=> match KeyLtb.ltb (k) (first_key_dl (dl))
+				with true
+				=> Coq.Init.Datatypes.None
+				| false
+				=> match KeyLtb.ltb (first_key_dl (dl)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(first_value_dl (dl))
+					| true
+					=> match KeyLtb.ltb (k) (second_key_dl (dl))
+						with true
+						=> Coq.Init.Datatypes.None
+						| false
+						=> match KeyLtb.ltb (second_key_dl (dl)) (k)
+							with false
+							=> Coq.Init.Datatypes.Some
+								(second_value_dl (dl))
+							| true
+							=> Coq.Init.Datatypes.None
+							end
+						end
+					end
+				end
+			| singleton_root (_ as sn)
+			=> match KeyLtb.ltb (k) (key_sn (sn))
+				with true
+				=> value_node (k) (left_sn (sn))
+				| false
+				=> match KeyLtb.ltb (key_sn (sn)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(value_sn (sn))
+					| true
+					=> value_node (k) (right_sn (sn))
+					end
+				end
+			| doubleton_root (_ as dn)
+			=> match KeyLtb.ltb (k) (first_key_dn (dn))
+				with true
+				=> value_node (k) (left_dn (dn))
+				| false
+				=> match KeyLtb.ltb (first_key_dn (dn)) (k)
+					with false
+					=> Coq.Init.Datatypes.Some
+						(first_value_dn (dn))
+					| true
+					=> match KeyLtb.ltb (k) (second_key_dn (dn))
+						with true
+						=> value_node (k) (middle_dn (dn))
+						| false
+						=> match KeyLtb.ltb (second_key_dn (dn)) (k)
+							with false
+							=> Coq.Init.Datatypes.Some
+								(second_value_dn (dn))
+							| true
+							=> value_node (k) (right_dn (dn))
+							end
+						end
+					end
+				end
 			end.
 
-		Definition contains (k : Keys.t)
-			(t : tree_t)
-			: Coq.Init.Datatypes.bool
-			:= match t
-			with empty_tree
-			=> Coq.Init.Datatypes.false
-			| singleton_tree (_ as k1) (_)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				end end
-			| doubleton_tree (_ as k1) (_)
-				(_ as k2) (_)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.false
-				end end end end
-			| binary_root (_ as n1)
-				(_ as k2) (_) (_ as n3)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n3)
-				| Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				end end
-			| ternary_root (_ as n1)
-				(_ as k2) (_) (_ as n3)
-				(_ as k4) (_) (_ as n5)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k4)
-				with Coq.Init.Datatypes.true
-				=> node_contains(k)(n3)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k4)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.true
-				| Coq.Init.Datatypes.true
-				=> node_contains(k)(n5)
-				end end end end
-			end.
 
-		Fixpoint node_value_at (k : Keys.t)
-			(n : node_t)
-			: Coq.Init.Datatypes.option(Values.t)
-			:= match n
-			with binary_node (_ as n1)
-				(_ as k2) (_ as v2) (_ as n3)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v2)
-				| Coq.Init.Datatypes.true
-				=> node_value_at(k)(n3)
-				end end
-			| ternary_node (_ as n1)
-				(_ as k2) (_ as v2) (_ as n3)
-				(_ as k4) (_ as v4) (_ as n5)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v2)
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k4)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n3)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k4)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v4)
-				| Coq.Init.Datatypes.true
-				=> node_value_at(k)(n5)
-				end end end end
-			| singleton_leaf (_ as k1) (_ as v1)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v1)
-				| Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				end end
-			| doubleton_leaf (_ as k1) (_ as v1)
-				(_ as k2) (_ as v2)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v1)
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v2)
-				| Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				end end end end
-			end.
-
-		Definition value_at (k : Keys.t)
-			(t : tree_t)
-			: Coq.Init.Datatypes.option(Values.t)
-			:= match t
-			return Coq.Init.Datatypes.option(Values.t)
-			with empty_tree
-			=> Coq.Init.Datatypes.None
-			| singleton_tree (_ as k1) (_ as v1)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v1)
-				end end
-			| doubleton_tree (_ as k1) (_ as v1)
-				(_ as k2) (_ as v2)
-			=> match Keys.ltb(k)(k1)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k1)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v1)
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v2)
-				| Coq.Init.Datatypes.true
-				=> Coq.Init.Datatypes.None
-				end end end end
-			| binary_root (_ as n1)
-				(_ as k2) (_ as v2) (_ as n3)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n3)
-				| Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v2)
-				end end
-			| ternary_root (_ as n1)
-				(_ as k2) (_ as v2) (_ as n3)
-				(_ as k4) (_ as v4) (_ as n5)
-			=> match Keys.ltb(k)(k2)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n1)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k2)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v2)
-				| Coq.Init.Datatypes.true
-				=> match Keys.ltb(k)(k4)
-				with Coq.Init.Datatypes.true
-				=> node_value_at(k)(n3)
-				| Coq.Init.Datatypes.false
-				=> match Keys.ltb(k4)(k)
-				with Coq.Init.Datatypes.false
-				=> Coq.Init.Datatypes.Some(v4)
-				| Coq.Init.Datatypes.true
-				=> node_value_at(k)(n5)
-				end end end end
-			end.
-
-		Proposition insert_k1
-			(k1 : Keys.t) (v1 : Values.t)
-			: Coq.Init.Logic.eq
-				(insert (k1)(v1)(empty_tree))
-				(singleton_tree (k1)(v1)).
-		Proof.
-			reflexivity.
-		Qed.
-
-		Proposition insert_k1_k2
-			(k1 : Keys.t) (v1 : Values.t)
-			(k2 : Keys.t) (v2 : Values.t)
-			(k1_lt_k2 : Coq.Init.Logic.eq 
-				(Keys.ltb (k1)(k2)) (true))
-			(k2_nlt_k1 : Coq.Init.Logic.eq
-				(Keys.ltb (k2)(k1)) (false))
-			: Coq.Init.Logic.eq
-				(insert (k2)(v2)
-					(insert (k1)(v1)
-					(empty_tree)))
-				(doubleton_tree (k1)(v1)(k2)(v2)).
-		Proof.
-			try unfold insert.
-			try rewrite k1_lt_k2.
-			try rewrite k2_nlt_k1.
-			reflexivity.
-		Qed.
-
-		Proposition insert_k2_k1
-			(k1 : Keys.t) (v1 : Values.t)
-			(k2 : Keys.t) (v2 : Values.t)
-			(k1_lt_k2 : Coq.Init.Logic.eq 
-				(Keys.ltb (k1)(k2)) (true))
-			(k2_nlt_k1 : Coq.Init.Logic.eq
-				(Keys.ltb (k2)(k1)) (false))
-			: Coq.Init.Logic.eq
-				(insert (k1)(v1)
-					(insert (k2)(v2)
-					(empty_tree)))
-				(doubleton_tree (k1)(v1)(k2)(v2)).
-		Proof.
-			try unfold insert.
-			try rewrite k1_lt_k2.
-			try rewrite k2_nlt_k1.
-			reflexivity.
-		Qed.
-
-		(***************
-		Proposition insert_k1_k2
-			(k1 : Keys.t) (v1 : Values.t)
-			(k2 : Keys.t) (v2 : Values.t)
-			(k1_lt_k2 : Coq.Init.Logic.eq 
-				(true) (Keys.ltb (k1) (k2)))
-			(k2_nlt_k1 : Coq.Init.Logic.eq
-				(false) (Keys.ltb (k2) (k1)))
-			: Coq.Init.Logic.eq
-				(insert (k2)(v2)
-					(insert (k1)(v1)(empty_tree)))
-				(doubleton_tree (k1)(v1)(k2)(v2)).
-		Proof.
-			reflexivity.
-		Qed.
-		***************)
-	End Trees.
-
-
+    End Trees.
 End TwoThreeTrees.
-
-Module NatNatTrees := TwoThreeTrees.Trees (Coq.Init.Nat) (Coq.Init.Nat).
-
-(*****************
-Proposition insert_k1_k2
-	(k1 : Coq.Init.Nat.t) (v1 : Coq.Init.Nat.t)
-	(k2 : Coq.Init.Nat.t) (v2 : Coq.Init.Nat.t)
-	(k1_lt_k2 : Coq.Init.Logic.eq 
-		(true) (Coq.Init.Nat.ltb (k1) (k2)))
-	(k2_nlt_k1 : Coq.Init.Logic.eq
-		(false) (Coq.Init.Nat.ltb (k2) (k1)))
-	: Coq.Init.Logic.eq
-		(NatNatTrees.insert (k2)(v2)
-			(NatNatTrees.insert (k1)(v1)
-			(NatNatTrees.empty_tree)))
-		(NatNatTrees.doubleton_tree
-			(k1)(v1)(k2)(v2)).
-Proof.
-	unfold NatNatTrees.insert.
-	unfold Nat.ltb in k1_lt_k2.
-	unfold Nat.ltb in k2_nlt_k1.
-
-
-
-
-	reflexivity.
-Qed.
-*************)
