@@ -1,16 +1,13 @@
+Require Coq.Structures.Equalities.
+Require Coq.Structures.Orders.
 Module BinSearchTrees.
 
-	Module Type IKeys.
-		Parameter t : Set.
-		Parameter ltb : t -> t -> bool.
-	End IKeys.
+	Module Type ITrees
+		(Keys : Coq.Structures.Equalities.Typ)
+		(KeyCompare : Coq.Structures.Orders.HasLtb (Keys))
+		(Values : Coq.Structures.Equalities.Typ).
 
-	Module Type IValues.
-		Parameter t : Set.
-	End IValues.
-
-	Module Type ITrees (Keys : IKeys) (Values : IValues).
-		Parameter t : Set.
+		Parameter t : Type.
 		Parameter empty : t.
 		Parameter singleton : Keys.t -> Values.t -> t.
 		Parameter insert : Keys.t -> Values.t -> t -> t.
@@ -19,10 +16,13 @@ Module BinSearchTrees.
 		Parameter remove_key : Keys.t -> t -> t.
 	End ITrees.
 
-	Module Trees (Keys : IKeys) (Values : IValues)
-		<: ITrees (Keys) (Values).
+	Module Trees
+		(Keys : Coq.Structures.Equalities.Typ)
+		(KeyCompare : Coq.Structures.Orders.HasLtb (Keys))
+		(Values : Coq.Structures.Equalities.Typ)
+		<: ITrees (Keys) (KeyCompare) (Values).
 
-		Inductive tree_t : Set
+		Inductive tree_t : Type
 			:= empty_tree : tree_t
 			|  tree_node : tree_t -> Keys.t ->
 				Values.t -> tree_t -> tree_t.
@@ -46,10 +46,10 @@ Module BinSearchTrees.
 			=> tree_node (empty_tree) (key1)
 				(value1) (empty_tree)
 		| tree_node (left2) (key2) (value2) (right2)
-			=> if Keys.ltb (key1) (key2)
+			=> if KeyCompare.ltb (key1) (key2)
 			then tree_node (insert (key1) (value1) (left2))
 				(key2) (value2) (right2)
-			else if Keys.ltb (key2) (key1)
+			else if KeyCompare.ltb (key2) (key1)
 			then tree_node (left2) (key2) (value2)
 				(insert (key1) (value1) (right2))
 			else tree_node (left2) (key1) (value1) (right2)
@@ -61,9 +61,9 @@ Module BinSearchTrees.
 		with empty_tree
 			=> false
 		| tree_node (left2)(key2)(value2)(right2)
-			=> if Keys.ltb (key1)(key2)
+			=> if KeyCompare.ltb (key1)(key2)
 			then contains_key (key1)(left2)
-			else if Keys.ltb (key2)(key1)
+			else if KeyCompare.ltb (key2)(key1)
 			then contains_key (key1)(right2)
 			else true
 		end.
@@ -74,9 +74,9 @@ Module BinSearchTrees.
 		with empty_tree
 			=> None
 		| tree_node (left2) (key2) (value2) (right2)
-			=> if Keys.ltb (key1) (key2)
+			=> if KeyCompare.ltb (key1) (key2)
 			then value_for (key1) (left2)
-			else if Keys.ltb (key2) (key1)
+			else if KeyCompare.ltb (key2) (key1)
 			then value_for (key1) (right2)
 			else Some (value2)
 		end.
@@ -89,12 +89,12 @@ Module BinSearchTrees.
 		with empty_tree
 			=> tree2
 		| tree_node (left2) (key2) (value2) (right2)
-			=> match (Keys.ltb (key1) (key2))
+			=> match (KeyCompare.ltb (key1) (key2))
 			with true
 			=> tree_node (remove_key (key1) (left2))
 				(key2) (value2) (right2)
 			| false
-			=> match (Keys.ltb (key2) (key1))
+			=> match (KeyCompare.ltb (key2) (key1))
 			with true
 			=> tree_node (left2) (key2) (value2)
 				(remove_key (key1) (right2))
@@ -112,7 +112,7 @@ Module BinSearchTrees.
 	End Trees.
 
 	Module TreesNat
-       		:= Trees (Coq.Init.Nat) (Coq.Init.Nat).
+       		:= Trees (Coq.Init.Nat) (Coq.Init.Nat) (Coq.Init.Nat).
 
 	Module ValidateTreesNat.
 		Definition TreeNat := TreesNat.t.
