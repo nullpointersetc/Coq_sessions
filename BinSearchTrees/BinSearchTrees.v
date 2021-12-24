@@ -1,165 +1,170 @@
 Module BinSearchTrees.
 
-	Module Type KeyModType.
+	Module Type IKeys.
 		Parameter t : Set.
 		Parameter ltb : t -> t -> bool.
-	End KeyModType.
+	End IKeys.
 
-	Module Type ValueModType.
+	Module Type IValues.
 		Parameter t : Set.
-	End ValueModType.
+	End IValues.
 
-	Module Trees (Keys : KeyModType) (Values : ValueModType).
+	Module Type ITrees (Keys : IKeys) (Values : IValues).
+		Parameter t : Set.
+		Parameter empty : t.
+		Parameter singleton : Keys.t -> Values.t -> t.
+		Parameter insert : Keys.t -> Values.t -> t -> t.
+		Parameter contains_key : Keys.t -> t -> bool.
+		Parameter value_for : Keys.t -> t -> option (Values.t).
+		Parameter remove_key : Keys.t -> t -> t.
+	End ITrees.
 
-		Inductive t : Set
-			:= Empty : t
-			|  Node : t -> Keys.t ->
-				Values.t -> t -> t.
+	Module Trees (Keys : IKeys) (Values : IValues)
+		<: ITrees (Keys) (Values).
 
-		Definition Singleton
+		Inductive tree_t : Set
+			:= empty_tree : tree_t
+			|  tree_node : tree_t -> Keys.t ->
+				Values.t -> tree_t -> tree_t.
+
+		Definition t := tree_t.
+
+		Definition empty := empty_tree.
+
+		Definition singleton
 			(key1 : Keys.t)
 			(value1 : Values.t)
-			: Trees.t
-			:= Node (Empty)(key1)(value1)(Empty).
+			: tree_t
+			:= tree_node (empty_tree) (key1)
+				(value1) (empty_tree).
 
-		Fixpoint Insert (key1 : Keys.t)
+		Fixpoint insert (key1 : Keys.t)
 			(value1 : Values.t)
-			(tree2 : Trees.t) : Trees.t
+			(tree2 : tree_t) : tree_t
 		:= match tree2
-		with Empty
-			=> Node(Empty)(key1)(value1)(Empty)
-		| Node(left2)(key2)(value2)(right2)
-			=> match Keys.ltb(key1)(key2)
-			with true =>
-				Node (Insert(key1)(value1)(left2))
-					(key2)(value2)(right2)
-			| false =>
-				match Keys.ltb(key2)(key1)
-				with true =>
-					Node (left2)(key2)(value2)
-						(Insert(key1)(value1)(right2))
-				| false =>
-				Node (left2)(key1)(value1)(right2)
-				end
-			end
+		with empty_tree
+			=> tree_node (empty_tree) (key1)
+				(value1) (empty_tree)
+		| tree_node (left2) (key2) (value2) (right2)
+			=> if Keys.ltb (key1) (key2)
+			then tree_node (insert (key1) (value1) (left2))
+				(key2) (value2) (right2)
+			else if Keys.ltb (key2) (key1)
+			then tree_node (left2) (key2) (value2)
+				(insert (key1) (value1) (right2))
+			else tree_node (left2) (key1) (value1) (right2)
 		end.
 
-		Fixpoint Contains_Key (key1 : Keys.t)
-			(tree2 : Trees.t) : bool
+		Fixpoint contains_key (key1 : Keys.t)
+			(tree2 : tree_t) : bool
 		:= match tree2
-		with Empty
+		with empty_tree
 			=> false
-		| Node (left2)(key2)(value2)(right2)
-			=> match Keys.ltb (key1)(key2)
-			with true =>
-				Contains_Key (key1)(left2)
-			| false =>
-				match Keys.ltb (key2)(key1)
-				with true =>
-					Contains_Key (key1)(right2)
-				| false => true
-				end
-			end
+		| tree_node (left2)(key2)(value2)(right2)
+			=> if Keys.ltb (key1)(key2)
+			then contains_key (key1)(left2)
+			else if Keys.ltb (key2)(key1)
+			then contains_key (key1)(right2)
+			else true
 		end.
 
-		Fixpoint Value_For (key1 : Keys.t)
-			(tree2 : Trees.t) : option (Values.t)
+		Fixpoint value_for (key1 : Keys.t)
+			(tree2 : tree_t) : option (Values.t)
 		:= match tree2
-		with Empty
+		with empty_tree
 			=> None
-		| Node (left2) (key2) (value2) (right2)
-			=> match Keys.ltb (key1) (key2)
-			with true =>
-				Value_For (key1) (left2)
-			| false =>
-				match Keys.ltb (key2) (key1)
-				with true => Value_For (key1) (right2)
-				| false => Some (value2)
-				end
-			end
+		| tree_node (left2) (key2) (value2) (right2)
+			=> if Keys.ltb (key1) (key2)
+			then value_for (key1) (left2)
+			else if Keys.ltb (key2) (key1)
+			then value_for (key1) (right2)
+			else Some (value2)
 		end.
 
-		Fixpoint Remove_Key (key1 : Keys.t)
-			(tree2 : Trees.t)
-			: Trees.t
-		:= let fix Reinsert
-			(tree3 : Trees.t)
-			(tree4 : Trees.t)
-			: Trees.t
-			:= match tree4
-			with Empty => tree3
-			| Node (left4) (key4) (value4) (right4)
-				=> Node (Reinsert (tree3) (left4))
-					(key4) (value4) (right4)
+		Fixpoint remove_key (key1 : Keys.t)
+			(tree2 : tree_t)
+			: tree_t
+		:= 
+		match tree2 return tree_t
+		with empty_tree
+			=> tree2
+		| tree_node (left2) (key2) (value2) (right2)
+			=> match (Keys.ltb (key1) (key2))
+			with true
+			=> tree_node (remove_key (key1) (left2))
+				(key2) (value2) (right2)
+			| false
+			=> match (Keys.ltb (key2) (key1))
+			with true
+			=> tree_node (left2) (key2) (value2)
+				(remove_key (key1) (right2))
+			| false
+			=> match (right2)
+			with empty_tree => left2
+			| tree_node (left3) (key3) (value3) (right3) =>
+				tree_node (left2) (key3) (value3)
+					(remove_key (key3) (right2))
 			end
-		in let Remove_From_Node
-			(left5 : Trees.t) 
-			(key5 : Keys.t)
-			(value5 : Values.t)
-			(right5 : Trees.t)
-			: Trees.t
-		:= match Keys.ltb (key1) (key5)
-		with true =>
-			Node (Remove_Key (key1) (left5))
-				(key5) (value5) (right5)
-		| false =>
-			match Keys.ltb (key5) (key1)
-			with true =>
-				Node (left5) (key5) (value5)
-					(Remove_Key (key1) (right5))
-			| false => Reinsert (left5) (right5)
 			end
-		end
-		in match tree2
-		with Empty => tree2
-		| Node (left2) (key2) (value2) (right2)
-			=> Remove_From_Node (left2) (key2) (value2) (right2)
+			end
 		end.
 
 	End Trees.
 
-	Module Trees_Nat := Trees (Coq.Init.Nat) (Coq.Init.Nat).
+	Module TreesNat
+       		:= Trees (Coq.Init.Nat) (Coq.Init.Nat).
 
-	Module Validate_Trees_Nat.
-		Definition Tree_Nat := Trees_Nat.t.
-		Definition Empty_Nat := Trees_Nat.Empty.
-		Definition Singleton_Nat := Trees_Nat.Singleton.
-		Definition Contains_Key := Trees_Nat.Contains_Key.
-		Definition Value_For := Trees_Nat.Value_For.
+	Module ValidateTreesNat.
+		Definition TreeNat := TreesNat.t.
+		Definition EmptyNat := TreesNat.empty.
+		Definition singleton := TreesNat.singleton.
+		Definition contains_key := TreesNat.contains_key.
+		Definition value_for := TreesNat.value_for.
  
-		Definition Tree1 := Singleton_Nat (1) (10).
+		Definition Tree1 := singleton (1) (10).
 
 		Proposition Prop1 :
-			Contains_Key (1) (Empty_Nat) = false.
+			contains_key (1) (EmptyNat) = false.
 		Proof.
 			reflexivity.
 		Qed.
 
 		Proposition Prop2 :
-			Contains_Key (1) (Tree1) = true.
+			TreesNat.contains_key (1)
+			(TreesNat.singleton (1)(10)) = true.
 		Proof.
 			reflexivity.
 		Qed.
 
+		(*
+		Proposition Prop2a :
+			forall n : nat, forall v : nat,
+			TreesNat.contains_key (n)
+			(TreesNat.singleton (n) (v)) = true.
+		Proof.
+			reflexivity.
+		Qed.
+		*)
+
 		Proposition Prop3 :
-			Contains_Key (2) (Tree1) = false.
+			contains_key (2) (Tree1) = false.
 		Proof.
 			reflexivity.
 		Qed.
 
 		Proposition Prop4 :
-			Value_For (1) (Tree1) = Some (10).
+			value_for (1) (Tree1) = Some (10).
 		Proof.
 			reflexivity.
 		Qed.
 
 		Proposition Prop5 :
-			Value_For (2) (Tree1) = None.
+			value_for (2) (Tree1) = None.
 		Proof.
 			reflexivity.
 		Qed.
 
-	End Validate_Trees_Nat.
+	End ValidateTreesNat.
 
 End BinSearchTrees.
 
