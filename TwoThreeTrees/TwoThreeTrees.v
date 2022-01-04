@@ -8,16 +8,19 @@ Module TwoThreeTrees.
 		(Values : Coq.Structures.Equalities.Typ)
 		<: Coq.Structures.Equalities.Typ.
 
+		Definition key_value_t :=
+			Coq.Init.Datatypes.prod (Keys.t) (Values.t).
+
 		Inductive tree_t :=
 			empty_tree : tree_t
-			| singleton_tree : singleton_leaf_t -> tree_t
+			| singleton_tree (kv : key_value_t) : tree_t
 			| doubleton_tree : doubleton_leaf_t -> tree_t
 			| singleton_root : singleton_node_t -> tree_t
 			| doubleton_root : doubleton_node_t -> tree_t
 		with node_t :=
 			singleton_node : singleton_node_t -> node_t
 			| doubleton_node : doubleton_node_t -> node_t
-			| singleton_leaf : singleton_leaf_t -> node_t
+			| singleton_leaf (kv : key_value_t) : node_t
 			| doubleton_leaf : doubleton_leaf_t -> node_t
 		with singleton_node_t :=
 			singleton_node_v : node_t
@@ -29,9 +32,6 @@ Module TwoThreeTrees.
 				-> node_t
 				-> Keys.t -> Values.t
 				-> node_t -> doubleton_node_t
-		with singleton_leaf_t :=
-			singleton_leaf_v : Keys.t -> Values.t
-				-> singleton_leaf_t
 		with doubleton_leaf_t :=
 			doubleton_leaf_v : Keys.t -> Values.t
 				-> Keys.t -> Values.t
@@ -121,20 +121,6 @@ Module TwoThreeTrees.
 			=> right
 			end.
 
-		Fixpoint key_sl (sl : singleton_leaf_t)
-			: Keys.t
-			:= match sl
-			with singleton_leaf_v (_ as key) (_)
-			=> key
-			end.
-
-		Fixpoint value_sl (sl : singleton_leaf_t)
-			: Values.t
-			:= match sl
-			with singleton_leaf_v (_) (_ as value)
-			=> value
-			end.
-
 		Fixpoint first_key_dl (dl : doubleton_leaf_t)
 			: Keys.t
 			:= match dl
@@ -168,18 +154,12 @@ Module TwoThreeTrees.
 		Fixpoint value_node (k : Keys.t) (node : node_t)
 			: Coq.Init.Datatypes.option (Values.t)
 			:= match node
-			with singleton_leaf (_ as sl)
-			=> match Keys.ltb (k) (key_sl (sl))
-				with true
-				=> Coq.Init.Datatypes.None
-				| false
-				=> match Keys.ltb (key_sl (sl)) (k)
-					with false
-					=> Coq.Init.Datatypes.Some
-						(value_sl (sl))
-					| true
-					=> Coq.Init.Datatypes.None
-					end
+			with singleton_leaf (_ as kv)
+			=> match Keys.ltb (k) (fst (kv)),
+				Keys.ltb (fst (kv)) (k)
+				with true, _ => None
+				| false, false => Some (snd (kv))
+				| _, true => None
 				end
 			| doubleton_leaf (_ as dl)
 			=> match Keys.ltb (k) (first_key_dl (dl))
@@ -248,18 +228,12 @@ Module TwoThreeTrees.
 			: Coq.Init.Datatypes.option (Values.t)
 			:= match tr
 			with empty_tree => Coq.Init.Datatypes.None
-			| singleton_tree (_ as sl)
-			=> match Keys.ltb (k) (key_sl (sl))
-				with true
-				=> Coq.Init.Datatypes.None
-				| false
-				=> match Keys.ltb (key_sl (sl)) (k)
-					with false
-					=> Coq.Init.Datatypes.Some
-						(value_sl (sl))
-					| true
-					=> Coq.Init.Datatypes.None
-					end
+			| singleton_tree (_ as kv)
+			=> match Keys.ltb (k) (fst (kv)),
+				Keys.ltb (fst (kv)) (k)
+				with true, _ => None
+				| false, false => Some (snd (kv))
+				| _, true => None
 				end
 			| doubleton_tree (_ as dl)
 			=> match Keys.ltb (k) (first_key_dl (dl))
