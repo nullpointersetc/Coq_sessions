@@ -4,10 +4,8 @@ Require Coq.Structures.Equalities.
 Module TwoThreeTrees.
 
 	Module Trees
-		(Keys : Coq.Structures.Equalities.Typ)
-		(KeyLtb : Coq.Structures.Orders.HasLtb(Keys))
+		(Keys : Coq.Structures.Orders.LtBool)
 		(Values : Coq.Structures.Equalities.Typ)
-		(ValueEqb : Coq.Structures.Equalities.HasEqb(Values))
 		<: Coq.Structures.Equalities.Typ.
 
 		Inductive tree_t :=
@@ -171,11 +169,11 @@ Module TwoThreeTrees.
 			: Coq.Init.Datatypes.option (Values.t)
 			:= match node
 			with singleton_leaf (_ as sl)
-			=> match KeyLtb.ltb (k) (key_sl (sl))
+			=> match Keys.ltb (k) (key_sl (sl))
 				with true
 				=> Coq.Init.Datatypes.None
 				| false
-				=> match KeyLtb.ltb (key_sl (sl)) (k)
+				=> match Keys.ltb (key_sl (sl)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(value_sl (sl))
@@ -184,20 +182,20 @@ Module TwoThreeTrees.
 					end
 				end
 			| doubleton_leaf (_ as dl)
-			=> match KeyLtb.ltb (k) (first_key_dl (dl))
+			=> match Keys.ltb (k) (first_key_dl (dl))
 				with true
 				=> Coq.Init.Datatypes.None
 				| false
-				=> match KeyLtb.ltb (first_key_dl (dl)) (k)
+				=> match Keys.ltb (first_key_dl (dl)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(first_value_dl (dl))
 					| true
-					=> match KeyLtb.ltb (k) (second_key_dl (dl))
+					=> match Keys.ltb (k) (second_key_dl (dl))
 						with true
 						=> Coq.Init.Datatypes.None
 						| false
-						=> match KeyLtb.ltb (second_key_dl (dl)) (k)
+						=> match Keys.ltb (second_key_dl (dl)) (k)
 							with false
 							=> Coq.Init.Datatypes.Some
 								(second_value_dl (dl))
@@ -208,11 +206,11 @@ Module TwoThreeTrees.
 					end
 				end
 			| singleton_node (_ as sn)
-			=> match KeyLtb.ltb (k) (key_sn (sn))
+			=> match Keys.ltb (k) (key_sn (sn))
 				with true
 				=> value_node (k) (left_sn (sn))
 				| false
-				=> match KeyLtb.ltb (key_sn (sn)) (k)
+				=> match Keys.ltb (key_sn (sn)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(value_sn (sn))
@@ -221,20 +219,20 @@ Module TwoThreeTrees.
 					end
 				end
 			| doubleton_node (_ as dn)
-			=> match KeyLtb.ltb (k) (first_key_dn (dn))
+			=> match Keys.ltb (k) (first_key_dn (dn))
 				with true
 				=> value_node (k) (left_dn (dn))
 				| false
-				=> match KeyLtb.ltb (first_key_dn (dn)) (k)
+				=> match Keys.ltb (first_key_dn (dn)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(first_value_dn (dn))
 					| true
-					=> match KeyLtb.ltb (k) (second_key_dn (dn))
+					=> match Keys.ltb (k) (second_key_dn (dn))
 						with true
 						=> value_node (k) (middle_dn (dn))
 						| false
-						=> match KeyLtb.ltb (second_key_dn (dn)) (k)
+						=> match Keys.ltb (second_key_dn (dn)) (k)
 							with false
 							=> Coq.Init.Datatypes.Some
 								(second_value_dn (dn))
@@ -251,11 +249,11 @@ Module TwoThreeTrees.
 			:= match tr
 			with empty_tree => Coq.Init.Datatypes.None
 			| singleton_tree (_ as sl)
-			=> match KeyLtb.ltb (k) (key_sl (sl))
+			=> match Keys.ltb (k) (key_sl (sl))
 				with true
 				=> Coq.Init.Datatypes.None
 				| false
-				=> match KeyLtb.ltb (key_sl (sl)) (k)
+				=> match Keys.ltb (key_sl (sl)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(value_sl (sl))
@@ -264,20 +262,20 @@ Module TwoThreeTrees.
 					end
 				end
 			| doubleton_tree (_ as dl)
-			=> match KeyLtb.ltb (k) (first_key_dl (dl))
+			=> match Keys.ltb (k) (first_key_dl (dl))
 				with true
 				=> Coq.Init.Datatypes.None
 				| false
-				=> match KeyLtb.ltb (first_key_dl (dl)) (k)
+				=> match Keys.ltb (first_key_dl (dl)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(first_value_dl (dl))
 					| true
-					=> match KeyLtb.ltb (k) (second_key_dl (dl))
+					=> match Keys.ltb (k) (second_key_dl (dl))
 						with true
 						=> Coq.Init.Datatypes.None
 						| false
-						=> match KeyLtb.ltb (second_key_dl (dl)) (k)
+						=> match Keys.ltb (second_key_dl (dl)) (k)
 							with false
 							=> Coq.Init.Datatypes.Some
 								(second_value_dl (dl))
@@ -288,11 +286,11 @@ Module TwoThreeTrees.
 					end
 				end
 			| singleton_root (_ as sn)
-			=> match KeyLtb.ltb (k) (key_sn (sn))
+			=> match Keys.ltb (k) (key_sn (sn))
 				with true
 				=> value_node (k) (left_sn (sn))
 				| false
-				=> match KeyLtb.ltb (key_sn (sn)) (k)
+				=> match Keys.ltb (key_sn (sn)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(value_sn (sn))
@@ -301,20 +299,20 @@ Module TwoThreeTrees.
 					end
 				end
 			| doubleton_root (_ as dn)
-			=> match KeyLtb.ltb (k) (first_key_dn (dn))
+			=> match Keys.ltb (k) (first_key_dn (dn))
 				with true
 				=> value_node (k) (left_dn (dn))
 				| false
-				=> match KeyLtb.ltb (first_key_dn (dn)) (k)
+				=> match Keys.ltb (first_key_dn (dn)) (k)
 					with false
 					=> Coq.Init.Datatypes.Some
 						(first_value_dn (dn))
 					| true
-					=> match KeyLtb.ltb (k) (second_key_dn (dn))
+					=> match Keys.ltb (k) (second_key_dn (dn))
 						with true
 						=> value_node (k) (middle_dn (dn))
 						| false
-						=> match KeyLtb.ltb (second_key_dn (dn)) (k)
+						=> match Keys.ltb (second_key_dn (dn)) (k)
 							with false
 							=> Coq.Init.Datatypes.Some
 								(second_value_dn (dn))
