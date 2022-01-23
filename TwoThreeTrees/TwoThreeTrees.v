@@ -156,15 +156,60 @@ Module TwoThreeTrees.
 				end)
 			for value.
 
-		Definition Test1 (tr : tree_t)
-			: tree_t
-			:= match tr
-				with empty_tree => empty_tree
-				| singleton_tree (_) => tr
-				| doubleton_tree (_) => tr
-				| singleton_root (_) => tr
-				| doubleton_root (_) => tr
-				end.
+		Definition insert (key1: Keys.t)
+			(val1: Values.t) (tr: tree_t) : tree_t
+			:= (match tr
+			with empty_tree =>
+				singleton_tree (k_and_v (key1) (val1))
+			| singleton_tree (k_and_v (key2) (val2)) =>
+				(match Keys.ltb (key1) (key2),
+					Keys.ltb (key2) (key1)
+				with true, _ =>
+					doubleton_tree (d_leaf
+						(k_and_v (key1) (val1))
+						(k_and_v (key2) (val2)))
+				| false, false =>
+					singleton_tree (k_and_v (key2) (val2))
+				| _, true =>
+					doubleton_tree (d_leaf
+						(k_and_v (key2) (val2))
+						(k_and_v (key1) (val1)))
+				end)
+			| doubleton_tree _ => empty_tree
+			| singleton_root _ => empty_tree
+			| doubleton_root _ => empty_tree
+			end).
+
+		Theorem insert_theorem_1 :
+			forall key: Keys.t, forall val: Values.t,
+			eq (insert (key) (val) (empty_tree))
+			(singleton_tree (k_and_v (key) (val))).
+		Proof.
+			intro key.
+			intro val.
+			unfold insert.
+			reflexivity.
+		Qed.
+
+		Theorem insert_theorem_2 :
+			forall key1: Keys.t, forall val1: Values.t,
+			forall key2: Keys.t, forall val2: Values.t,
+			forall k1_lt_k2: is_true (Keys.ltb (key1) (key2)),
+			eq (insert (key1) (val1) (insert (key2) (val2) (empty_tree)))
+			(doubleton_tree (d_leaf
+						(k_and_v (key1) (val1))
+						(k_and_v (key2) (val2)))).
+		Proof.
+			intro key1.
+			intro val1.
+			intro key2.
+			intro val2.
+			intro k1_lt_k2.
+			unfold is_true in k1_lt_k2.
+			unfold insert.
+			rewrite -> k1_lt_k2.
+			reflexivity.
+		Qed.
 
 	End Trees.
 End TwoThreeTrees.
