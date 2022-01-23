@@ -156,15 +156,21 @@ Module TwoThreeTrees.
 				end)
 			for value.
 
-		Definition Test1 (tr : tree_t)
-			: tree_t
-			:= match tr
-				with empty_tree => empty_tree
-				| singleton_tree (_) => tr
+		Definition insert : Keys.t -> Values.t -> tree_t -> tree_t
+			:= fun (k : Keys.t) (v : Values.t) (tr : tree_t) =>
+				(match tr
+				with empty_tree => singleton_tree (k_and_v (k) (v))
+				| singleton_tree (_ as kv) =>
+					(match Keys.ltb (k) (key_from (kv)),
+						Keys.ltb (key_from (kv)) (k)
+				with true, _ => doubleton_tree (d_leaf (k_and_v (k) (v)) (kv))
+				| false, false => singleton_tree (k_and_v (k) (v))
+				| _, true => doubleton_tree (d_leaf (kv) (k_and_v (k) (v)))
+				end)
 				| doubleton_tree (_) => tr
 				| singleton_root (_) => tr
 				| doubleton_root (_) => tr
-				end.
+				end).
 
 	End Trees.
 End TwoThreeTrees.
