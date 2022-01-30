@@ -156,29 +156,88 @@ Module TwoThreeTrees.
 				end)
 			for value.
 
-		Definition insert (key1: Keys.t)
-			(val1: Values.t) (tr: tree_t) : tree_t
-			:= (match tr
-			with empty_tree =>
-				singleton_tree (k_and_v (key1) (val1))
-			| singleton_tree (k_and_v (key2) (val2)) =>
-				(match Keys.ltb (key1) (key2),
-					Keys.ltb (key2) (key1)
-				with true, _ =>
-					doubleton_tree (d_leaf
-						(k_and_v (key1) (val1))
-						(k_and_v (key2) (val2)))
-				| false, false =>
-					singleton_tree (k_and_v (key2) (val2))
-				| _, true =>
-					doubleton_tree (d_leaf
-						(k_and_v (key2) (val2))
-						(k_and_v (key1) (val1)))
-				end)
-			| doubleton_tree _ => empty_tree
-			| singleton_root _ => empty_tree
-			| doubleton_root _ => empty_tree
-			end).
+		Definition insert : Keys.t -> Values.t -> tree_t -> tree_t
+			:= fix insert_one (key1 : Keys.t) (val1 : Values.t) (node : node_t) : node_t
+				:= (match node
+					with singleton_leaf (_ as kv) => singleton_leaf (k_and_v (key1) (val1))
+					| doubleton_leaf (_ as kvkv) => singleton_leaf (k_and_v (key1) (val1))
+					| singleton_node (_ as sn) => singleton_leaf (k_and_v (key1) (val1))
+					| doubleton_node (_ as dn) => singleton_leaf (k_and_v (key1) (val1))
+					end)
+			with insert (key1 : Keys.t) (val1 : Values.t) (tr : tree_t)
+				:= (match tr
+					with empty_tree =>
+						singleton_tree (k_and_v (key1) (val1))
+					| singleton_tree (_ as kv) =>
+						(match Keys.ltb (key1) (key_from (kv)),
+							Keys.ltb (key_from (kv)) (key1)
+						with true, _ =>
+							doubleton_tree (d_leaf (k_and_v (key1) (val1)) (kv))
+						| false, false =>
+							singleton_tree (k_and_v (key1) (val1))
+						| _, true =>
+							doubleton_tree (d_leaf (kv) (k_and_v (key1) (val1)))
+						end)
+					| doubleton_tree (_ as kvkv) =>
+						(match Keys.ltb (key1) (first_key_of (kvkv)),
+							Keys.ltb (first_key_of (kvkv)) (key1),
+							Keys.ltb (key1) (second_key_of (kvkv)),
+							Keys.ltb (second_key_of (kvkv)) (key1)
+						with true, _, _, _ =>
+							singleton_root (s_node
+								(singleton_leaf (k_and_v (key1) (val1)))
+								(first_of (kvkv))
+								(singleton_leaf (second_of (kvkv))))
+						| false, false, _, _ =>
+						  doubleton_tree (d_leaf
+						  	(k_and_v (key1) (val1))
+						  	(second_of (kvkv)))
+						| _, true, true, _ =>
+							singleton_root (s_node
+								(singleton_leaf (first_of (kvkv)))
+								(k_and_v (key1) (val1))
+								(singleton_leaf (second_of (kvkv))))
+						| _, _, false, false =>
+						  doubleton_tree (d_leaf
+						  	(first_of (kvkv))
+						  	(k_and_v (key1) (val1)))
+						| _, _, _, true =>
+							singleton_root (s_node
+								(singleton_leaf (first_of (kvkv)))
+								(second_of (kvkv))
+								(singleton_leaf (k_and_v (key1) (val1))))
+						end)
+					| singleton_root (_ as sn) =>
+						(match Keys.ltb (key1) (key_inside (sn)),
+							Keys.ltb (key_inside (sn)) (key1)
+						with true, _ =>
+							singleton_root (sn)
+						| false, false =>
+						  singleton_root (s_node
+						  	(left_inside (sn))
+						  	(k_and_v (key1) (val1))
+						  	(right_inside (sn)))
+						| _, true =>
+							singleton_root (sn)
+						end)
+					| doubleton_root (_ as dn) =>
+						(match Keys.ltb (key1) (first_key_within (dn)),
+							Keys.ltb (first_key_within (dn)) (key1),
+							Keys.ltb (key1) (second_key_within (dn)),
+							Keys.ltb (second_key_within (dn)) (key1)
+						with true, _, _, _ =>
+							doubleton_root (dn)
+						| false, false, _, _ =>
+						  doubleton_root (dn)
+						| _, true, true, _ =>
+							doubleton_root (dn)
+						| _, _, false, false =>
+							doubleton_root (dn)
+						| _, _, _, true =>
+							doubleton_root (dn)
+						end)
+					end)
+			for insert.
 
 		Theorem insert_theorem_1 :
 			forall key: Keys.t, forall val: Values.t,
@@ -194,7 +253,8 @@ Module TwoThreeTrees.
 		Theorem insert_theorem_2 :
 			forall key1: Keys.t, forall val1: Values.t,
 			forall key2: Keys.t, forall val2: Values.t,
-			forall k1_lt_k2: is_true (Keys.ltb (key1) (key2)),
+			forall k1_lt_k2: eq true (Keys.ltb (key1) (key2)),
+			forall k2_not_lt_k1: eq false (Keys.ltb (key2) (key1)),
 			eq (insert (key1) (val1) (insert (key2) (val2) (empty_tree)))
 			(doubleton_tree (d_leaf
 						(k_and_v (key1) (val1))
@@ -205,9 +265,72 @@ Module TwoThreeTrees.
 			intro key2.
 			intro val2.
 			intro k1_lt_k2.
-			unfold is_true in k1_lt_k2.
+			intro k2_not_lt_k1.
 			unfold insert.
-			rewrite -> k1_lt_k2.
+			unfold key_from.
+			try rewrite <- k1_lt_k2.
+			try rewrite <- k2_not_lt_k1.
+			reflexivity.
+		Qed.
+
+		Theorem insert_theorem_3 :
+			forall key1: Keys.t, forall val1: Values.t,
+			forall key2: Keys.t, forall val2: Values.t,
+			forall k1_not_lt_k2: eq false (Keys.ltb (key1) (key2)),
+			forall k2_lt_k1: eq true (Keys.ltb (key2) (key1)),
+			eq (insert (key1) (val1) (insert (key2) (val2) (empty_tree)))
+			(doubleton_tree (d_leaf
+						(k_and_v (key2) (val2))
+						(k_and_v (key1) (val1)))).
+		Proof.
+			intro key1.
+			intro val1.
+			intro key2.
+			intro val2.
+			intro k1_not_lt_k2.
+			intro k2_lt_k1.
+			unfold insert.
+			try unfold key_from.
+			try rewrite <- k1_not_lt_k2.
+			try rewrite <- k2_lt_k1.
+			reflexivity.
+		Qed.
+
+		Theorem insert_theorem_4 :
+			forall key1: Keys.t, forall val1: Values.t,
+			forall key2: Keys.t, forall val2: Values.t,
+			forall key3: Keys.t, forall val3: Values.t,
+			forall k1_lt_k2: eq true (Keys.ltb (key1) (key2)),
+			forall k2_not_lt_k1: eq false (Keys.ltb (key2) (key1)),
+			forall k2_lt_k3: eq true (Keys.ltb (key2) (key3)),
+			forall k3_not_lt_k2: eq false (Keys.ltb (key3) (key2)),
+			eq (insert (key1) (val1) (insert (key2) (val2)
+             (insert (key3) (val3) (empty_tree))))
+			(singleton_root (s_node
+						(singleton_leaf (k_and_v (key1) (val1)))
+						(k_and_v (key2) (val2))
+						(singleton_leaf (k_and_v (key3) (val3))))).
+		Proof.
+			intro key1.
+			intro val1.
+			intro key2.
+			intro val2.
+			intro key3.
+			intro val3.
+			intro k1_lt_k2.
+			intro k2_not_lt_k1.
+			intro k2_lt_k3.
+			intro k3_not_lt_k2.
+			unfold insert.
+			try unfold first_key_of.
+			try unfold first_of.
+			try unfold second_key_of.
+			try unfold second_of.
+			try unfold key_from.
+			try rewrite <- k2_lt_k3.
+      try rewrite <- k3_not_lt_k2.
+			try rewrite <- k1_lt_k2.
+      try rewrite <- k2_not_lt_k1.
 			reflexivity.
 		Qed.
 
