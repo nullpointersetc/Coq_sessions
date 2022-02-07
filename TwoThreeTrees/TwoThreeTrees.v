@@ -157,7 +157,62 @@ Module TwoThreeTrees.
 			for value.
 
 		Definition insert : Keys.t -> Values.t -> tree_t -> tree_t
-			:= fix insert_one (key1 : Keys.t) (val1 : Values.t) (node : node_t) : node_t
+			:= fix must_split_to_insert_1 (key1 : Keys.t) (val1 : Values.t) (node : node_t) : bool
+				:= (match node
+					with singleton_leaf (_ as kv) => false
+					| doubleton_leaf (_ as kvkv) =>
+						(match Keys.ltb (key1) (first_key_of (kvkv)),
+							Keys.ltb (first_key_of (kvkv)) (key1),
+							Keys.ltb (key1) (second_key_of (kvkv)),
+							Keys.ltb (second_key_of (kvkv)) (key1)
+						with true, _, _, _ => true
+						| false, false, _, _ => false
+						| _, true, true, _ => true
+						| _, _, false, false => false
+						| _, _, _, true => true
+						end)
+					| singleton_node (_ as sn) => false
+					| doubleton_node (_ as dn) =>
+						(match Keys.ltb (key1) (first_key_within (dn)),
+							Keys.ltb (first_key_within (dn)) (key1),
+							Keys.ltb (key1) (second_key_within (dn)),
+							Keys.ltb (second_key_within (dn)) (key1)
+						with true, _, _, _ => must_split_to_insert_1 (key1) (val1) (left_within (dn))
+						| false, false, _, _ => false
+						| _, true, true, _ => must_split_to_insert_1 (key1) (val1) (middle_within (dn))
+						| _, _, false, false => false
+						| _, _, _, true => must_split_to_insert_1 (key1) (val1) (right_within (dn))
+						end)
+					end)
+			with must_split_to_insert_2 (key1 : Keys.t) (val1 : Values.t) (tr : tree_t) : bool
+				:= (match tr
+					with empty_tree (_ as kv) => false
+					| singleton_tree (_ as kv) => false
+					| doubleton_tree (_ as kvkv) =>
+						(match Keys.ltb (key1) (first_key_of (kvkv)),
+							Keys.ltb (first_key_of (kvkv)) (key1),
+							Keys.ltb (key1) (second_key_of (kvkv)),
+							Keys.ltb (second_key_of (kvkv)) (key1)
+						with true, _, _, _ => true
+						| false, false, _, _ => false
+						| _, true, true, _ => true
+						| _, _, false, false => false
+						| _, _, _, true => true
+						end)
+					| singleton_root (_ as sn) => false
+					| doubleton_root (_ as dn) =>
+						(match Keys.ltb (key1) (first_key_within (dn)),
+							Keys.ltb (first_key_within (dn)) (key1),
+							Keys.ltb (key1) (second_key_within (dn)),
+							Keys.ltb (second_key_within (dn)) (key1)
+						with true, _, _, _ => must_split_to_insert_1 (key1) (val1) (left_within (dn))
+						| false, false, _, _ => false
+						| _, true, true, _ => must_split_to_insert_1 (key1) (val1) (middle_within (dn))
+						| _, _, false, false => false
+						| _, _, _, true => must_split_to_insert_1 (key1) (val1) (right_within (dn))
+						end)
+					end)
+			with insert_node (key1 : Keys.t) (val1 : Values.t) (node : node_t) : node_t
 				:= (match node
 					with singleton_leaf (_ as kv) => singleton_leaf (k_and_v (key1) (val1))
 					| doubleton_leaf (_ as kvkv) => singleton_leaf (k_and_v (key1) (val1))
@@ -267,7 +322,28 @@ Module TwoThreeTrees.
 			intro k1_lt_k2.
 			intro k2_not_lt_k1.
 			unfold insert.
-			unfold key_from.
+			try unfold right_within.
+			try unfold second_value_within.
+			try unfold second_key_within.
+			try unfold second_within.
+			try unfold middle_within.
+			try unfold first_value_within.
+			try unfold first_key_within.
+			try unfold first_within.
+			try unfold left_within.
+			try unfold right_inside.
+			try unfold value_inside.
+			try unfold key_inside.
+			try unfold key_value_inside.
+			try unfold left_inside.
+			try unfold second_value_of.
+			try unfold second_key_of.
+			try unfold second_of.
+			try unfold first_value_of.
+			try unfold first_key_of.
+			try unfold first_of.
+			try unfold value_from.
+			try unfold key_from.
 			try rewrite <- k1_lt_k2.
 			try rewrite <- k2_not_lt_k1.
 			reflexivity.
@@ -290,6 +366,27 @@ Module TwoThreeTrees.
 			intro k1_not_lt_k2.
 			intro k2_lt_k1.
 			unfold insert.
+			try unfold right_within.
+			try unfold second_value_within.
+			try unfold second_key_within.
+			try unfold second_within.
+			try unfold middle_within.
+			try unfold first_value_within.
+			try unfold first_key_within.
+			try unfold first_within.
+			try unfold left_within.
+			try unfold right_inside.
+			try unfold value_inside.
+			try unfold key_inside.
+			try unfold key_value_inside.
+			try unfold left_inside.
+			try unfold second_value_of.
+			try unfold second_key_of.
+			try unfold second_of.
+			try unfold first_value_of.
+			try unfold first_key_of.
+			try unfold first_of.
+			try unfold value_from.
 			try unfold key_from.
 			try rewrite <- k1_not_lt_k2.
 			try rewrite <- k2_lt_k1.
@@ -322,10 +419,27 @@ Module TwoThreeTrees.
 			intro k2_lt_k3.
 			intro k3_not_lt_k2.
 			unfold insert.
-			try unfold first_key_of.
-			try unfold first_of.
+			try unfold right_within.
+			try unfold second_value_within.
+			try unfold second_key_within.
+			try unfold second_within.
+			try unfold middle_within.
+			try unfold first_value_within.
+			try unfold first_key_within.
+			try unfold first_within.
+			try unfold left_within.
+			try unfold right_inside.
+			try unfold value_inside.
+			try unfold key_inside.
+			try unfold key_value_inside.
+			try unfold left_inside.
+			try unfold second_value_of.
 			try unfold second_key_of.
 			try unfold second_of.
+			try unfold first_value_of.
+			try unfold first_key_of.
+			try unfold first_of.
+			try unfold value_from.
 			try unfold key_from.
 			try rewrite <- k2_lt_k3.
       try rewrite <- k3_not_lt_k2.
