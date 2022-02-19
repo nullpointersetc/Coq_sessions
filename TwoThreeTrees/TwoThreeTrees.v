@@ -531,6 +531,16 @@ Module TwoThreeTrees.
       (k17_not_lt_k15 : eq false (Keys.ltb k17 k15))
       (k17_not_lt_k16 : eq false (Keys.ltb k17 k16))
       (k17_not_lt_k17 : eq false (Keys.ltb k17 k17))
+      (lt_not_reflexive : forall (x : Keys.t), eq false (Keys.ltb x x))
+      (lt_not_symmetric : forall (x : Keys.t)
+        (y : Keys.t)
+        (x_lt_y : eq true (Keys.ltb (x) (y))),
+        eq false (Keys.ltb y x))
+      (lt_transitive : forall (x : Keys.t)
+        (y : Keys.t) (z : Keys.t)
+        (x_lt_y : eq true (Keys.ltb x y))
+        (y_lt_z : eq true (Keys.ltb y z)),
+        eq true (Keys.ltb x z))
       (tr1 : tree_type)
       (tr1_eq : eq tr1
         (ternary_root
@@ -556,28 +566,51 @@ Module TwoThreeTrees.
             (singleton_subtree (pair k17 v17)))))
       (tr2 : tree_type)
       (tr2_eq : eq tr2
-        (ternary_root
-          (ternary_subtree
-            (singleton_subtree (pair k1 v1))
-            (pair k2 v2)
-            (singleton_subtree (pair k3 v3))
+        (binary_root
+          (binary_subtree
+            (binary_subtree
+              (singleton_subtree (pair k1 v1))
+              (pair k2 v2)
+              (singleton_subtree (pair k3 v3)))
             (pair k4 v4)
-            (singleton_subtree (pair k5 v5)))
-          (pair k6 v6)
-          (ternary_subtree
-            (singleton_subtree (pair k7 v7))
-            (pair k8 v8)
-            (singleton_subtree (pair k9 v9))
-            (pair k10 v10)
-            (singleton_subtree (pair k11 v11)))
-          (pair k12 v12)
-          (ternary_subtree
-            (singleton_subtree (pair k13 v13))
-            (pair k14 v14)
-            (singleton_subtree (pair k15 v15))
-            (pair k16 v16)
-            (singleton_subtree (pair k17 v17)))))
-    : and (eq true (bound k1 tr1)) (eq true (bound k1 tr2)).
+            (binary_subtree
+              (singleton_subtree (pair k5 v5))
+              (pair k6 v6)
+              (singleton_subtree (pair k7 v7))))
+          (pair k8 v8)
+          (binary_subtree
+            (binary_subtree
+              (singleton_subtree (pair k9 v9))
+              (pair k10 v10)
+              (singleton_subtree (pair k11 v11)))
+            (pair k12 v12)
+            (ternary_subtree
+              (singleton_subtree (pair k13 v13))
+              (pair k14 v14)
+              (singleton_subtree (pair k15 v15))
+              (pair k16 v16)
+              (singleton_subtree (pair k17 v17))))))
+    : and (and (and (and (and (and (and (and (and (and (and
+      (and (and (and (and (and (and (and (and (and (and (and
+      (and (and (and (and (and (and (and (and (and (and (and
+      (eq true (bound k1 tr1)) (eq true (bound k2 tr1)))
+      (eq true (bound k3 tr1))) (eq true (bound k4 tr1)))
+      (eq true (bound k5 tr1))) (eq true (bound k6 tr1)))
+      (eq true (bound k7 tr1))) (eq true (bound k8 tr1)))
+      (eq true (bound k9 tr1))) (eq true (bound k10 tr1)))
+      (eq true (bound k11 tr1))) (eq true (bound k12 tr1)))
+      (eq true (bound k13 tr1))) (eq true (bound k14 tr1)))
+      (eq true (bound k15 tr1))) (eq true (bound k16 tr1)))
+      (eq true (bound k17 tr1)))
+      (eq true (bound k1 tr2))) (eq true (bound k2 tr2)))
+      (eq true (bound k3 tr2))) (eq true (bound k4 tr2)))
+      (eq true (bound k5 tr2))) (eq true (bound k6 tr2)))
+      (eq true (bound k7 tr2))) (eq true (bound k8 tr2)))
+      (eq true (bound k9 tr2))) (eq true (bound k10 tr2)))
+      (eq true (bound k11 tr2))) (eq true (bound k12 tr2)))
+      (eq true (bound k13 tr2))) (eq true (bound k14 tr2)))
+      (eq true (bound k15 tr2))) (eq true (bound k16 tr2)))
+      (eq true (bound k17 tr2)).
     Proof.
       rewrite -> tr1_eq.
       rewrite -> tr2_eq.
@@ -702,8 +735,8 @@ Module TwoThreeTrees.
       try rewrite <- k7_lt_k15.
       try rewrite <- k7_lt_k16.
       try rewrite <- k7_lt_k17.
-      try rewrite <- k8_not_lt_k1.
       try rewrite <- k8_not_lt_k2.
+      try rewrite <- k8_not_lt_k1.
       try rewrite <- k8_not_lt_k3.
       try rewrite <- k8_not_lt_k4.
       try rewrite <- k8_not_lt_k5.
