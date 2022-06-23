@@ -11,6 +11,89 @@ January | February | March
 | July | August | September
 | October | November | December.
 
+Definition Day_after (d : Day_of_the_Week) :=
+    match d
+    with Monday => Tuesday
+    | Tuesday => Wednesday
+    | Wednesday => Thursday
+    | Thursday => Friday
+    | Friday => Saturday
+    | Saturday => Sunday
+    | Sunday => Monday
+    end.
+
+Fail Definition Day_before (d : Day_of_the_Week) :=
+    match d
+    with Monday => Sunday
+    | Tuesday => Monday
+    | Wednesday => Tuesday
+    | Thursday => Wednesday
+    | Saturday => Friday
+    | Sunday => Saturday
+    end.
+
+(* The command has indeed failed with message:
+   Non exhaustive pattern-matching: no clause found for pattern
+   Friday *)
+
+Definition Day_before (d : Day_of_the_Week) :=
+    match d
+    with Monday => Sunday
+    | Tuesday => Monday
+    | Wednesday => Tuesday
+    | Thursday => Wednesday
+    | Friday => Thursday
+    | Saturday => Friday
+    | Sunday => Saturday
+    end.
+
+Theorem Two_days_after :
+    eq (Wednesday) (Day_after (Day_after (Monday))).
+Proof.
+    assert (P1 := eq_refl : eq (Tuesday) (Day_after (Monday))).
+    assert (P2 := eq_refl : eq (Wednesday) (Day_after (Tuesday))).
+    rewrite P1 in P2.
+    exact P2.
+Qed.
+
+Theorem Two_days_after_2 :
+    eq (Wednesday) (Day_after (Day_after (Monday))).
+Proof.
+    assert (P2 := eq_refl : eq (Wednesday) (Day_after (Day_after (Monday)))).
+    exact P2.
+Qed.
+
+Theorem Two_days_after_3 :
+    eq (Wednesday) (Day_after (Day_after (Monday))).
+Proof.
+    exact (eq_refl : eq (Wednesday) (Day_after (Day_after (Monday)))).
+Qed.
+
+
+
+Theorem After_inverse_of_before
+    (d : Day_of_the_Week)
+    : Day_after (Day_before d) = d.
+Proof.
+    assert (D_A_D_B_Monday := eq_refl : eq (Day_after (Day_before (Monday))) (Monday)).
+    assert (D_A_D_B_Tuesday := eq_refl : eq (Day_after (Day_before (Tuesday))) (Tuesday)).
+    assert (D_A_D_B_Wednesday := eq_refl : eq (Day_after (Day_before (Wednesday))) (Wednesday)).
+    assert (D_A_D_B_Thursday := eq_refl : eq (Day_after (Day_before (Thursday))) (Thursday)).
+    assert (D_A_D_B_Friday := eq_refl : eq (Day_after (Day_before (Friday))) (Friday)).
+    assert (D_A_D_B_Saturday := eq_refl : eq (Day_after (Day_before (Saturday))) (Saturday)).
+    assert (D_A_D_B_Sunday := eq_refl : eq (Day_after (Day_before (Sunday))) (Sunday)).
+    destruct d.
+    { exact D_A_D_B_Monday. }
+    { exact D_A_D_B_Tuesday. }
+    { exact D_A_D_B_Wednesday. }
+    { exact D_A_D_B_Thursday. }
+    { exact D_A_D_B_Friday. }
+    { exact D_A_D_B_Saturday. }
+    { exact D_A_D_B_Sunday. }
+Qed.
+
+
+
 Theorem Day_must_be_MTWTFSS :
 forall d : Day_of_the_Week,
 or (eq d Monday) (or (eq d Tuesday)
