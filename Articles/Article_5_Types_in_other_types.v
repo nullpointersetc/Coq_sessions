@@ -1,4 +1,4 @@
-(** Article 5. Types inside other types. *)
+(** Article 5. Types on top of other types. *)
 
 (**
 
@@ -8,21 +8,15 @@ to our Australasian branches put no fewer
 than twenty-two things on top of other things."
 -- Sir William [1]
 
-This article is about making types
-whose values are composed of values from
-other types.  That is a confusing sentence,
-so let us tackle it using familiar ideas.
-We did this in the last article with the
-calendar, and we shall also use the calendar
-here.
-
 Suppose that we need to represent a date
 on the calendar.  To write a date in English,
 one could write the day of the week,
 the month of the year,
 the day of the month (as an ordinal number,
 from first to thirty-first), and the year.
-We can imitate this in Coq like so:
+Those are four pieces of data.
+
+I would like to imitate this in Coq like so:
 
 *)
 
@@ -33,11 +27,14 @@ Fail Definition Northeast_blackout_of_2003 :=
     make_date (Thursday) (August) (fourteenth) (Year2003).
 
 (**
+
 Unlike the constructors for the days
 of the week and the months of the year that
-we defined last time, the constructor make_date
-has four parameters.  To use make_date,
-therefore, we need four arguments.
+were defined last time,
+the constructor make_date has parameters.
+In fact, it has four parameters.
+To use make_date, therefore,
+we need four arguments.
 Once we put in the fourth argument,
 we have a value of the Date type.
 
@@ -45,6 +42,7 @@ Of course, we cannot use these definitions
 yet because we have not even defined the
 Date type and the make_date constructor.
 That definition will look like this:
+
 *)
 
 Fail Inductive Date : Set :=
@@ -54,6 +52,7 @@ Fail Inductive Date : Set :=
        (year : Year).
 
 (**
+
 The only problem now is that we have not
 defined Day_of_the_Week, Month_of_the_Year,
 Day_of_the_Month, and Year.  We have to
@@ -62,6 +61,7 @@ define these types first.
 Let us copy the Day_of_the_Week and
 Month_of_the_Year types from the
 previous article:
+
 *)
 
 Inductive Day_of_the_Week : Set :=
@@ -76,8 +76,11 @@ Inductive Month_of_the_Year : Set :=
     | October | November | December.
 
 (**
-Next, we define the Day_of_the_Month
-and Year types:
+
+We now also need types
+to represent the day of the month
+and to represent the year:
+
 *)
 
 Inductive Day_of_the_Month : Set :=
@@ -121,7 +124,10 @@ Inductive Year : Set :=
     | Year2096 | Year2097 | Year2098 | Year2099.
 
 (**
-Now we can define the Date type.
+
+Now we can define the Date type by
+building it on top of these four other types.
+
 *)
 
 Inductive Date : Set :=
@@ -130,8 +136,12 @@ Inductive Date : Set :=
        (day_of_the_month : Day_of_the_Month)
        (year : Year).
 
-(** And now we can define those dates
-that we couldn't define earlier: *)
+(**
+
+And now I can define those dates
+that I couldn't define earlier:
+
+*)
 
 Definition First_day_of_2000 : Date :=
     make_date (Saturday) (January) (first) (Year2000).
@@ -139,23 +149,143 @@ Definition First_day_of_2000 : Date :=
 Definition Northeast_blackout_of_2003 :=
     make_date Thursday August fourteenth Year2003.
 
-Inductive Date2 : Set :=
-    make_date2 : forall day_of_the_week : Day_of_the_Week,
-        forall month : Month_of_the_Year,
-        forall day_of_the_month : Day_of_the_Month,
-        forall year : Year, Date2.
+(**
 
-(*
-Definition Date_after (the_date : Date) :=
-    match the_date
-    with Make_Date (_ as day_w) (December) (thirty_first) (Year2099)
-=> Make_Date (day_w) (December) (thirty_first) (Year2099)
-|    Make_Date (_ as day_w) (_ as month) (_ as day_m) (_ as year)
-=> Make_Date (Day_after(day_w))(month)(Day_of_Month_after(day_m))(year)
-end.
+We can even define these functions
+that extract the parts that were
+used to construct the Date value:
+
 *)
 
-(** [1] Chapman, Graham, and John Cleese
+Definition Day_of_Week_of (date : Date)
+    : Day_of_the_Week
+    := match date
+    with make_date (_ as day_of_week)
+        (_ as month) (_ as day_of_month)
+        (_ as year) =>
+            day_of_week
+    end.
+
+
+Definition Month_of (date : Date)
+    : Month_of_the_Year
+    := match date
+    with make_date (_ as day_of_week)
+        (_ as month) (_ as day_of_month)
+        (_ as year)
+            => month
+    end.
+
+
+Definition Day_of_Month_of (date : Date)
+    : Day_of_the_Month
+    := match date
+    with make_date (_ as day_of_week)
+        (_ as month) (_ as day_of_month)
+        (_ as year) =>
+            day_of_month
+    end.
+
+
+Definition Year_of (date : Date) : Year
+    := match date
+    with make_date (_ as day_of_week)
+        (_ as month) (_ as day_of_month)
+        (_ as year) =>
+            year
+    end.
+
+
+Theorem Blackout_happened_in_2003 :
+    eq (Year2003) (Year_of (Northeast_blackout_of_2003)).
+Proof.
+    unfold Northeast_blackout_of_2003.
+    unfold Year_of.
+    reflexivity.
+Qed.
+
+(**
+
+This looks great!  What could be wrong with it?  Well ...
+
+One problem is that a Date can be constructed
+with the wrong Day_of_the_Week:
+
+*)
+
+Definition Wrong_day_of_week :=
+    make_date Friday January first Year2022.
+
+Definition Correct_day_of_week :=
+    make_date Saturday January first Year2022.
+
+(**
+
+Another problem is that not all months have
+thirty-one days, but Coq cannot catch that
+with our definition of the Date type:
+
+*)
+
+Definition Wrong_day_after_June_30th :=
+    make_date Friday June thirty_first Year2022.
+
+Definition Correct_day_after_June_30th :=
+    make_date Friday July first Year2022.
+
+(**
+
+The variable length of February makes the
+second problem worse:
+
+*)
+
+Definition Correct_day_in_leap_year :=
+    make_date Saturday February twenty_ninth Year2020.
+
+Definition Incorrect_day_in_non_leap_year :=
+    make_date Monday February twenty_ninth Year2022.
+
+(**
+
+There is one final problem in that
+the last year that can be represented is
+Year2099.  If you're reading this in,
+say, Year2090, then you will have to
+extend the Year type, much like
+programmers like me had to fix
+the so-called Y2K or Millenium bug 
+Sorry.
+
+But for all its problems, the Date type
+has been built on top of four other types.
+This opens up the possibilities of
+many mathematical objects, such as
+
+- A point type defined in terms of
+  an x-co-ordinate, a y-co-ordinate,
+  and a z-co-ordinate.
+
+- Galois fields like GF(256), which is
+  used by the Advanced Encryption Standard.
+
+- Complex numbers -- a + i * b --
+  defined as two real numbers,
+  the "real part" a and the "imaginary part" b.
+
+- Quaternions -- a + i * b + j * c + i * j * d --
+  defined as four real numbers, a, b, c, and d.
+
+But we have a long way to go before we get
+to things like these.
+
+Next time, however, I plan on examining
+something more radical: types that are built
+on top of ... themselves.
+
+References:
+
+[1] Chapman, Graham, and John Cleese
     and Terry Gilliam and Eric Idle
     and Terry Jones and Michael Palin.
     "The Royal Society for
@@ -165,4 +295,6 @@ end.
     BBC, 1970.  Quoted in
     "Monty Python's Flying Circus:
     Just the Words."  Methuen, 1989.
-    Graham Chapman portrays Sir William. *)
+    Graham Chapman portrays Sir William.
+
+*)
