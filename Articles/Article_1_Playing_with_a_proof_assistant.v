@@ -1,4 +1,4 @@
-(* Article 1. Playing with ... a proof assistant *)
+Module Article_1_Playing_with_a_proof_assistant.
 
 (**
 My software-development career began
@@ -240,3 +240,6 @@ https://softwarefoundations.cis.upenn.edu/
 Prentice-Hall (Simon & Schuster), 1986.
 
 *)
+
+End Article_1_Playing_with_a_proof_assistant.
+
