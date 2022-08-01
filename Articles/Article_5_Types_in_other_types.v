@@ -12,9 +12,18 @@ This article is about making types
 whose values are composed of values from
 other types.  That topic sounds complex,
 so let us tackle it using familiar ideas.
+
+*)
+
+Module Article_5_Types_in_other_types.
+
+(**
+
 We did this in the last article with the
 calendar, and we shall also use the calendar
-here: *)
+here:
+
+*)
 
 Inductive Day_of_the_Week : Set :=
     Monday | Tuesday
@@ -206,3 +215,5 @@ end.
     "Monty Python's Flying Circus:
     Just the Words."  Methuen, 1989.
     Graham Chapman portrays Sir William. *)
+
+End Article_5_Types_in_other_types.
