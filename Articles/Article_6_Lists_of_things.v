@@ -42,31 +42,23 @@ series as a vernacular file, so I also
 refer *Coq* to the preceding article as well:
 
 *)
+Add LoadPath "/home/darren/Coq_sessions/Articles" as Articles.
 
 Load Article_5_Types_in_other_types.
 
 Import Article_5_Types_in_other_types.
 
-(**
-
-Now that we have our Date type, we can
-start the code for this article.
-
-*)
+(** Now that we have our Date type, we can
+start the code for this article. *)
 
 Module Article_6_Lists_of_things.
 
-(**
-
-I will be making many attempts to define a
+(** I will be making many attempts to define a
 type called List_of_dates.  So I need to
 put each attempt into its own Module.
-
-The first attempt at a list type
-will be one that can construct a
-List_of_dates from three Dates:
-
 *)
+
+(** ** First attempt: List of three dates *)
 
 Module First_attempt.
 
@@ -164,11 +156,8 @@ Module First_attempt.
         reflexivity.
     Qed.
 
-    (**
-
-    But this type can only represent three dates, no more.
-
-    *)
+    (** But this type can only represent
+    three dates, no more (and no fewer). *)
 
     Fail Definition SunFest_2022 :=
         Make_List (Make_Date (Thursday) (July) (seventh) (Year2022))
@@ -189,9 +178,12 @@ End First_attempt.
 
 The first problem we should fix is to allow
 lists of more dates to be represented.
-So let us abandon the first try and move to the second try.
+So let us abandon the first attempt, and
+try to resolve this problem in the second attempt.
 
 *)
+
+(** ** Second attempt: Three or four or five dates *)
 
 Module Second_attempt.
 
@@ -331,40 +323,74 @@ Module Second_attempt.
         | Make_List_of_4 (_) (_) (_) (_ as fourth) => fourth
         end.
 
-    End Second_attempt.
+End Second_attempt.
 
-    Module Third_try.
+(** ** Third attempt: Making a bigger list from a smaller list
+
+The ideas behind the third attempt are quite simple:
+
+    - We can make a list of two dates.
+
+    - We can take a list of two dates and put it
+      together with another date to make a list
+      of three dates.
+
+    - We can take a list of three dates and put it
+      together with another date to make a list
+      of four dates.
+
+    - And so on, and so on, and so on.
+
+We can express these ideas more simply,
+and more accurately, in these two ideas:
+
+    - We can make a list of two dates.
+
+    - We can take an existing list and
+      put it together with another date
+      to make a list that has one more date
+      that the existing list.
+
+So here we go:
+
+*)
+
+Module Third_attempt.
 
     Inductive List_of_dates : Set :=
-        cons (head : Date) (tail : Date)
-        | cons' (head : List_of_dates) (tail : Date).
+        cons' (head : Date) (tail : Date)
+        | cons (head : List_of_dates) (tail : Date).
+
+    (** (There is a tradition where "cons"
+    is the name of the operation that
+    constructs a list.) *)
 
     Definition Home_County_2022 :=
-        cons' (cons (Make_Date (Friday) (July) (fifteenth) (Year2022))
+        cons (cons' (Make_Date (Friday) (July) (fifteenth) (Year2022))
                 (Make_Date (Saturday) (July) (sixteenth) (Year2022)))
             (Make_Date (Sunday) (July) (seventeenth) (Year2022)).
 
     Definition SunFest_2022 :=
-        cons' (cons' (cons (Make_Date (Thursday) (July) (seventh) (Year2022))
+        cons (cons (cons' (Make_Date (Thursday) (July) (seventh) (Year2022))
                     (Make_Date (Friday) (July) (eighth) (Year2022)))
                 (Make_Date (Saturday) (July) (ninth) (Year2022)))
             (Make_Date (Sunday) (July) (tenth) (Year2022)).
 
     Definition London_RibFest_2022 :=
-        cons' (cons' (cons' (cons
+        cons (cons (cons (cons'
                         (Make_Date (Thursday) (July) (twenty_eighth) (Year2022))
                         (Make_Date (Friday) (July) (twenty_ninth) (Year2022)))
                     (Make_Date (Saturday) (July) (thirtieth) (Year2022)))
                 (Make_Date (Sunday) (July) (thirty_first) (Year2022)))
             (Make_Date (Monday) (August) (first) (Year2022)).
 
-    End Third_try.
+End Third_attempt.
 
-    Module Fourth_try.
+Module Fourth_attempt.
 
     Inductive List_of_dates : Set :=
-        cons (head: Date) (tail : List_of_dates)
-        | cons' (head : Date) (tail : Date).
+        cons' (head : Date) (tail : Date)
+        | cons (head: Date) (tail : List_of_dates).
 
     Definition Home_County_2022 :=
         cons (Make_Date (Friday) (July) (fifteenth) (Year2022))
@@ -384,7 +410,17 @@ Module Second_attempt.
                       (cons' (Make_Date (Sunday) (July) (thirty_first) (Year2022))
                           (Make_Date (Monday) (August) (first) (Year2022))))).
 
-    End Fourth_try.
+End Fourth_attempt.
+
+(** ** References
+
+1. Haber, Josh, and Michael Vogel.
+"To Where and Back Again &mdash; Part 1".
+Episode 142 of "My Little Pony: Friendship is Magic."
+Vancouver, B.C.: DHX Studios, 2016.  Starlight Glimmer voiced by Kelly Sheridan.
+
+2. Ibid. Trixie voiced by Kathleen Barr.
+*)
 
 End Article_6_Lists_of_things.
 
