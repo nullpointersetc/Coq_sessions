@@ -1,7 +1,9 @@
+(** * Article 1. Playing with a proof assistant *)
+
 Module Article_1_Playing_with_a_proof_assistant.
 
-(**
-My software-development career began
+(** printing -> %->% #-># *)
+(** #&#40;&#42;&#42;# My software-development career began
 forty years ago. I was still a schoolboy,
 and the local high school offered a week-long
 introduction to BASIC programming on their
@@ -43,7 +45,7 @@ is called a proof assistant.
 
 There are several proof assistants available.
 The system that I am using is called Coq
-(https://coq.inria.fr/) [1].
+#<a href="https://coq.inria.fr/">&#60;https://coq.inria.fr/&#62;.&#185;</a>#
 It is available for Windows and for Linux,
 and if you have a Debian Linux distribution,
 you can install Coq as a software package.
@@ -69,13 +71,13 @@ check his proofs.
 
 The first program that introduces a
 computer language to new users, at least since
-Kernighan and Richie's "The C Programming Language"
-[2], involves the phrase "Hello, world".
+Kernighan and Richie's
+#<em>The C Programming Language,&#178;</em>#
+involves the phrase "Hello, world".
 Strictly speaking, Coq's vernacular is not
 a programming language, but I should start
 with a "Hello, world" example.
-I have come up with this:
-*)
+I have come up with this: #&#42;&#41;# *)
 
 Axiom Greeting : Prop.
 
@@ -93,15 +95,15 @@ Proof.
 
 Qed.
 
-(**
+(** #&#40;&#42;&#42;#
 If you have Coq installed,
 you can run the Coq top-level program,
 "coqtop", in a command-prompt window
 and type each of these lines one at a time.
 It would look like this:
 
-[Example begins]
-
+#&#91;Example begins&#93;#
+[[
 $ coqtop
 
 Welcome to Coq 8.12.0 (November 2020)
@@ -151,19 +153,19 @@ Hello_world < Qed.
 Coq < Quit.
 
 $
-
-[Example ends]
+]]
+#&#91;Example ends&#93;#
 
 You could also save the above axioms and
 theorem and proof in a text file named
 "Article_1_Playing_with_a_proof_assistant.v",
 then run "coqtop" with the "-l" option:
 
-[Example begins]
-
+#&#91;Example begins&#93;#
+[[
 coqtop -l Article_1_Playing_with_a_proof_assistant.v
-
-[Example ends]
+]]
+#&#91;Example ends&#93;#
 
 If there were any errors in the file,
 you will get an error message and Coq quits.
@@ -181,32 +183,41 @@ to run the file.
 
 In fact, I wrote THIS ENTIRE ARTICLE as
 a file named
-"Article_1_Playing_with_a_proof_assistant.v",
-and ran the file with coqtop or the Coq IDE.
+
+    Article_1_Playing_with_a_proof_assistant.v
+
+and ran the file with coqtop and the Coq IDE.
+
 The text that you are reading appears between
-the character sequence '(', '*', '*',
-and the character sequence '*', ')'.
+the characters #&#40;&#42;&#42;# and
+#&#42;&#41;#.
 In general, text between
-the character sequence '(', '*',
-and the character sequence '*', ')'.
-called a comment, and Coq ignores comments.
+the characters #&#40;&#42;&#42;#
+and the characters #&#42;&#41;#
+is called a comment,
+and coqtop and the Coq IDE ignores comments.
+Another tool supplied by INRIA, called coqdoc,
+converts this file into HTML for publishing
+purposes; coqdoc explicitly looks for comments
+that start with #&#40;&#42;&#42;# and formats
+them as paragraphs.
 
 In a sense, this article has been verified
 by Coq to be valid.  It is not unusual to
 write articles that are Coq scripts: I am
-following the example of Michael Nahas [3]
+following the example of Michael #Nahas&#179;#
 and writing the article as a script.
 There is even an entire online book series,
-"Software Foundations" [4],
+#"Software Foundations",&#8308;#
 which was written in the Coq vernacular
 that have been verified and then published.
 
 (The idea of publishing text as source code
 is not new: Jim Welsh and Atholl Hay wrote
 an entire book, "A Model Implementation of
-Standard Pascal" [5], whose text was a single
-source-code file with the human-readable text
-in comments.
+Standard #Pascal",&#8309;# whose text was
+a single source-code file with
+the human-readable text in comments.
 You could say, in the era of type-in programs
 that were published in books and magazines,
 that it was the ultimate type-in program.
@@ -216,29 +227,29 @@ So that's the first article.
 For my second article, I plan on explaining
 how to begin proving theorems in Coq.
 
+** References
 
-* References:
-
-[1] Institut national de recherche en
+#&#185;# Institut national de recherche en
 sciences et technologies du numérique (Inria).
 "The Coq Proof Assistant."
 https://coq.inria.fr/
 
-[2] Kernighan, Brian, and Dennis Ritchie.
+#&#178;# Kernighan, Brian, and Dennis Ritchie.
 "The C Programming Language."
 Prentice-Hall, 1978.
 
-[3] Nahas, Michael.  "Mike Nahas's Coq Tutorial."
+#&#179;# Nahas, Michael.  "Mike Nahas's Coq Tutorial."
 https://mdnahas.github.io/doc/nahas_tutorial.v
 
-[4] Pierce, Benjamin C., et alia.  "Software Foundations."
+#&#8308;# Pierce, Benjamin C., et alia.  "Software Foundations."
 Department of Computer and Information Science, University of Pennsylvania.
 https://softwarefoundations.cis.upenn.edu/
 
-[5] Welsh, Jim, and Atholl Hay.
+#&#8309;# Welsh, Jim, and Atholl Hay.
 "A Model Implementation of Standard Pascal."
 Prentice-Hall (Simon & Schuster), 1986.
 
+#&#42;&#41;#
 *)
 
 End Article_1_Playing_with_a_proof_assistant.

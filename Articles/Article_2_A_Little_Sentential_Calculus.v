@@ -1,6 +1,9 @@
-(** * Article 2: A Little Sentential Calculus
+(** * Article 2: A Little Sentential Calculus *)
 
-If you take an undergraduate course in
+Module Article_2_A_Little_Sentential_Calculus.
+
+(** printing -> %->% #-># *)
+(** If you take an undergraduate course in
 formal mathematical logic, you might start
 with analogies to the real world.
 It's an effective teaching strategy.
@@ -32,6 +35,7 @@ her new batch of quince marmalade,
 has she been in Sarnia?
 
 Let's work this out first:
+Patricia is ready to make quince marmalade.
 If Patricia is ready to make quince marmalade,
 then it follows that she must have bought quinces.
 If she bought quinces, and she always buys them from
@@ -45,16 +49,23 @@ is only a little Sentential Calculus.)
 We do this by assigning letters to sentences
 that can be either true or false.
 
-As a reminder, this article is written as a script
-in Coq's vernacular. The text of this article is
-in comments, so you should be assured that Coq
-has actually verified the script.
+Like Article 1, this article is written as
+a script in the vernacular of #Coq&#185;,#
+and the text
+that you are reading is actually written
+as comments delimited by #&#40;&#42;&#42;#
+and #&#42;&#41;# in the script.
+(The coqdoc tool normally does not include
+the #&#40;&#42;&#42;# and #&#42;&#41;#
+delimiters, and I have used a trick so
+that you can see them here.)
 
-*)
-
-Module Article_2_A_Little_Sentential_Calculus.
-
-(**
+There will also be comments that are
+delimited by #&#40;&#42;# and #&#42;&#41;;#
+these comments are what Coq script writers
+would normally include in a script.
+(The coqdoc tool will include the
+#&#40;&#42;# and #&#42;&#41;# delimiters.)
 
 In this case, we have four statements:
 
@@ -78,22 +89,34 @@ Axiom S : Prop.
 
 (**
 
-Note: these sentences are not necessarily true.
-They could be true, but they could be false as well.
+Note that these sentences are not necessarily True.
+They could be True, but they could be False as well.
 
-The Axiom command means that Coq should assume
-something without proof.
-In this case, Coq should assume that P, Q, R, and S
-are propositions. A proposition, in this case,
-is a sentence that could be true or false.
-
-Again, we do not instruct Coq to assume that P is true;
-we only instruct Coq to assume that P is a proposition.
+Each sentence is represented by a single letter,
+and each letter is declared to be a [Prop]
+(this word is short for #<em>proposition</em>#).
+In Coq, a proposition is considered to either
+be provable or not provable.
 
 It is now obvious how contrived this example is;
 I needed something for which the letters P, Q, R, and S
 could stand, and I settled on Patricia, quinces, Robert,
 and Sarnia. I'll come back to that later.
+
+The Axiom command means that Coq should assume
+something without proof.
+In this case, Coq should assume that
+P, Q, R, and S are propositions.
+
+To repeat the point about the sentences,
+Coq is not instructed to assume that P
+is True; it is only to assume that P is
+a proposition (which we are associating
+with the sentence
+"Patricia is prepared to make quince marmalade").
+Similarly, Coq is instructed to assume
+that Q, R, and S are propositions,
+but not to assume that they are True.
 
 We now tell Coq to assume that P is true:
 
@@ -106,13 +129,37 @@ Axiom Pr1 : P.
 
 (**
 
-This axiom is called a "premise", so I have
-labeled it with the prefix "Pr".
-For a theorem, and for a proof, you need both
-propositions and premises.
+This axiom is called a "premise",
+and I have chosen to begin the name of a
+premise with the prefix "Pr".
+This premise states that Coq should
+assume, because of Pr1, that P is True
+(or more correctly, P is provably True).
+Based on his #tutorial,&#178;#
+Michael Nahas would refer to Pr1 as
+a proof of P.
 
-The next thing Coq needs to know is that it
-follows from P that Q must be true:
+Basically, a formal proof of a
+proposition in Coq is constructed
+by listing proofs of other propositions
+(these proofs of other propositions
+are the premises) and then using tactics
+to demonstrate how the premises lead
+to the proposition we want to prove.
+In our case, the goal is to get a
+proof of S.
+We cannot get this proof with only
+the one premise, which is a proof of P.
+We need more premises.
+
+We got the first premise from the
+statement "Patricia is ready to make
+quince marmalade."  As you recall,
+we had four statements; we therefore
+need four premises, one for each statement.
+
+So now, let us make a premise for the
+second statement:
 
 **)
 
@@ -127,6 +174,16 @@ The arrow pointing to the right is read "implies".
 Here, we are stating that "P implies Q" or
 "if P is true then Q is true", or "P is true only
 if Q is true".
+
+But what it really means: if you have a proof of P,
+you can apply Pr2 to that proof
+and you get another proof, this time a proof of Q.
+We have a proof of #P&#160;&#8212;#
+that is, #Pr1&#160;&#8212;#
+so we should be able to get a proof of Q.
+
+We have converted two of the four sentences
+into premises.  Now we convert the other two:
 
 **)
 
@@ -166,44 +223,61 @@ Qed.
 
 (**
 
-Since we have four premises,
-numbered one through four,
-the first derivation is number five.
-
 Here, unfortunately, is the complicated bit.
-We use Modus Ponendo Ponens for each derivation.
-"Modus Ponendo Ponens" is a Latin phrase that
-means "the method that affirms by affirming".
+
+We have started with four premises,
+numbered one through four.
+The first assertion is therefore
+numbered five.
+
+Each new statement is derived from
+two other statements by a method called
+"Modus Ponendo Ponens" (which is a Latin phrase
+that means "the method that affirms by affirming").
 
 The assertion MPP5 affirms Q from
 [ P -> Q ] (Pr2) by affirming P (Pr1).
+The order is important:
+The premise with the arrow is named first,
+and the premise proving the left-hand
+side of the arrow is named next,
+and the proposition for which we want
+the proof is named last.
 
 The assertion MPP6 affirms R from
 [ Q -> R ] (Pr3) by affirming Q (MPP5).
+The assertion MPP6 is like MPP5,
+except that the proof of the left-hand side
+is not a premise.  The proof of the left-hand
+side is an earlier assertion (MPP5 in particular).
+This is how proofs work in Coq: you assert
+proofs of some propositions from the premises,
+then you assert proofs of other propositions
+from proofs that you already asserted.
 
 The assertion MPP7 affirms S from
 [ R -> S ] (Pr4) by affirming R (MPP6).
-
 Derivation MPP7 affirms S,
 which was what we want,
 so we use exact to tell Coq to check
 that it is indeed what we want.
-
-Qed is short for another Latin phrase,
-"quod erat demonstrandum", which means
-"which was to be demonstrated".
-(Mathematical logic employs a lot of Latin.)
+We then end the proof with "Qed",
+which is short for another Latin phrase,
+"quod erat demonstrandum".
+(Mathematical logic employs a lot of Latin.
+"Quod erat demonstrandum" means
+"which was to be demonstrated".)
 We could read the "exact MPP7. Qed."
 as "MPP7 is exactly what was to be demonstrated."
-In any case, Qed means that the proof is finished.
 
 Now, the above proof is reminiscent of the way that
 proofs are presented in symbolic logic courses,
 where you have to write down a numbered list of formulas,
 and each formula must be justified as a premise,
 an assumption, or as the result of applying a
-rule of inference
-(See Hardegree, 1999, section 5.22, exercise 1).
+rule of inference.  This proof is based
+on an exercise in G. M. Hardegree's
+"Symbolic Logic" #textbook.&#179;#
 It's great if you're writing proofs down by hand,
 because it's easier to write single letters
 than whole words.
@@ -277,20 +351,24 @@ three of clubs ranks higher than the two of clubs.
 It's only marginally better.
 
 I would say that there is more than one art of
-computer programming (cf. Knuth 1997, 1998, 2011)
+computer programming #(cf. Knuth&#8308;)#
 and one of those arts must be that happy medium
 between terse and verbose.
 
 So that's the second article. My plan for the
 third article is to strike towards the happy medium.
 
-*)
+** References:
 
-End Article_2_A_Little_Sentential_Calculus.
+#&#185;# Institut national de recherche en
+sciences et technologies du numérique (Inria).
+"The Coq Proof Assistant."
+https://coq.inria.fr/
 
-(** ** References:
+#&#178;# Nahas, Michael.  "Mike Nahas's Coq Tutorial."
+https://mdnahas.github.io/doc/nahas_tutorial.v
 
-Hardegree, G. M. (1999)
+#&#179;# Hardegree, G. M. (1999)
     "Symbolic Logic: A First Course."
     McGraw-Hill College.
     Section 5.22, exercise 1.
@@ -302,4 +380,5 @@ Knuth, D. E. (1997, 1998, 2011)
 
 **)
 
+End Article_2_A_Little_Sentential_Calculus.
 
