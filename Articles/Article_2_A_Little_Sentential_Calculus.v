@@ -374,7 +374,7 @@ https://mdnahas.github.io/doc/nahas_tutorial.v
     Section 5.22, exercise 1.
     <https://courses.umass.edu/phil110-gmh/MAIN/IHome-5.htm>
 
-Knuth, D. E. (1997, 1998, 2011)
+#&#8308;# Knuth, D. E. (1997, 1998, 2011)
     "The Art of Computer Programming."
     Addison-Wesley. Four volumes.
 
