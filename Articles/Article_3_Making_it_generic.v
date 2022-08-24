@@ -1,57 +1,15 @@
-(** * Article 3: Making it generic
-
-In the previous article, we had two proofs:
-the terse proof and the verbose proof.
-I have copied these proofs into this article,
-but I have omitted all the comments from the terse example,
-
-*)
+(** * Article 3: Making it generic *)
 
 Module Article_3_Making_it_generic.
 
-(**
-
-I have put the terse example inside a Module,
-and I have put the verbose example inside a Section:
-
-*)
-
-Module Terse_example.
-
-	(* "Derived from Hardegree (1999) section 5.22, exercise 1." *)
-
-	Axiom P : Prop.
-
-	Axiom Q : Prop.
-
-	Axiom R : Prop.
-
-	Axiom S : Prop.
-
-	Axiom Pr1 : P.
-
-	Axiom Pr2 : P -> Q.
-
-	Axiom Pr3 : Q -> R.
-
-	Axiom Pr4 : R -> S.
-
-	Theorem T1 : S.
-
-	Proof.
-
-		assert (MPP5 := Pr2 (Pr1) : Q).
-
-		assert (MPP6 := Pr3 (MPP5) : R).
-
-		assert (MPP7 := Pr4 (MPP6) : S).
-
-		exact MPP7.
-
-	Qed.
-
-End Terse_example.
-
+(** printing -> %->% #-># *)
+(** printing forall %forall% #forall# *)
+(** You might remember that, in the previous
+article of this series, I presented two
+proofs in #Coq&#185;#
+of the same situation, which was
+something about quinces.  I will reproduce
+the verbose version here: *)
 
 Section Verbose_example.
 
@@ -103,12 +61,62 @@ Section Verbose_example.
 
 End Verbose_example.
 
-(**
+(** And I will reproduce the terse example
+#here:&#178;# *)
+
+Module Terse_example.
+
+	Axiom P : Prop.
+
+	Axiom Q : Prop.
+
+	Axiom R : Prop.
+
+	Axiom S : Prop.
+
+	Axiom Pr1 : P.
+
+	Axiom Pr2 : P -> Q.
+
+	Axiom Pr3 : Q -> R.
+
+	Axiom Pr4 : R -> S.
+
+	Theorem T1 : S.
+
+	Proof.
+
+		assert (MPP5 := Pr2 (Pr1) : Q).
+
+		assert (MPP6 := Pr3 (MPP5) : R).
+
+		assert (MPP7 := Pr4 (MPP6) : S).
+
+		exact MPP7.
+
+	Qed.
+
+End Terse_example.
+
+(** Now the terse example is easier to follow
+than the verbose example.  When everything
+is named by a letter or an abbreviation,
+you can easily see that we can go from
+P to S:  We can go from P to Q, and
+then from Q to R, and then from R to S.
+In more mathematical language, we would
+say that P is true (because Pr1 says that
+P is true), and therefore Q is true
+(because Pr2 says that P implies Q),
+and therefore R is true (because Pr3
+says that Q implies R), and finally,
+that S is true (because Pr4 says that
+R implies S).
 
 I have more words to define before I proceed.
 
 In the command "Theorem T1 : S",
-the Proposition S is called the "goal".
+the proposition S is called the "goal".
 When you enter this command, Coq does not just
 blindly accept the Theorem to be true.
 Instead, immediately after the Theorem command,
@@ -119,7 +127,8 @@ until you actually write the Proof of the Theorem.
 This mirrors how papers, journals, and textbooks
 (for the college-and-university level,
 at least) are written:
-A theorem is stated, and it is immediately followed by its proof.
+A theorem is stated, and its proof
+is immediately printed after the theorem.
 
 The "assert" command is called a "tactic".
 A tactic in Coq is a step towards proving the goal.
@@ -137,8 +146,9 @@ goal has been achieved ("exact" is an example of such a tactic).
 There are other tactics that add new goals and resolve other goals
 in the middle of a proof.
 
-That sounds like a lot of juggling for you and Coq to do,
-and it is.  Coq is a "proof assistant" in that it keeps track
+That sounds like a lot of juggling for you and Coq to do.
+It is a lot of juggling for a human to do.
+Coq is a "proof assistant" in that it keeps track
 of everything that you've done, and it enforces that
 every tactic that you use is valid.
 (However, Coq is not a "theorem prover".
@@ -190,9 +200,7 @@ Q stands for Patricia_has_bought_quinces, and so on)
 and type in our word-problem proof into Coq using the new names,
 and be done with it.  Problem solved.
 
-Or ...
-
-We might try to write the terse proof in such a way
+Or ... we might try to write the terse proof in such a way
 that Coq is able to reuse it to prove the verbose theorem.
 
 First off, we can restrict the letters P, Q, R, and S
@@ -206,6 +214,12 @@ the Theorem name and restrict them to the Theorem as well.
 then the premises also have to go into the parentheses
 after the letters, because the letters will no longer
 have meaning outside of the Theorem.)
+
+Note that the name "MPP_three_times" means to
+apply the rule "Modus ponendo ponens"
+(the method, by affirming one thing,
+of affirming a second thing) three times.
+
 We do that and we get this:
 
 **)
@@ -232,6 +246,15 @@ Module First_version_of_MPP_three_times.
 
 	Qed.
 
+	(** Theorem MPP_three_times is generic.
+  What that means is that it has eight
+  parameters (four propositions and
+  four axioms based on the propositions),
+  and we can use MPP_three_times
+  by writing MPP_three_times
+  followed by eight arguments.
+  For example: *)
+
 	Theorem Patricia_was_indeed_in_Sarnia
 		: Patricia_was_in_Sarnia.
 
@@ -251,18 +274,19 @@ Module First_version_of_MPP_three_times.
 
 	Qed.
 
-	(**
+	(** Each of the parameters in MPP_three_times
+  is replaced by an argument (P is replaced
+  by Patricia_is_prepared_to_make_marmalade,
+  Q is replaced by Patricia_has_bought_quinces,
+  and so on).  MPP_three_times then outputs
+  a proof that Patricia_was_in_Sarnia
+  (which is the argument for the parameter S),
+  which we call She_was_indeed_in_Sarnia.
 
-	Note that the order of the Axioms matters when using
-	the MPP_three_times Theorem.
+	Note that the order of the Axioms matters
+  when using the MPP_three_times Theorem.
 	The following Proof shows that putting the
-	Axioms in the wrong order will not work.
-
-	(We know that two of the tactics will fail.
-	So we will begin the tactics that we know
-	will fail with, appropriately enough, "Fail".)
-
-	*)
+	Axioms in the wrong order will not work. *)
 
 	Theorem Patricia_was_indeed_in_Sarnia_with_failures
 		: Patricia_was_in_Sarnia.
@@ -303,10 +327,8 @@ Module First_version_of_MPP_three_times.
 
 	Qed.
 
-	(**
-
-	The Fail prefix is useful in scripts for writing
-	commands and tactics.
+	(** The Fail prefix is useful in scripts
+  for writing commands and tactics.
 
 	Normally, a command that Coq determines to be valid
 	is just executed and Coq continues,
@@ -326,16 +348,17 @@ Module First_version_of_MPP_three_times.
 
 	The Fail prefix is useful in scripts such as
 	this article.
-	I don't have to tell you that a command will fail;
-	I can write Fail command and Coq will verify
-	that the command does fail.
+	I don't have to tell you that
+  a command will fail; I can write
+  Fail followed by command
+  and Coq will verify that the command
+  does fail.
 
 	There are other changes we can make.
-	We don't really need to assert She_was_indeed_in_Sarnia separately;
-	we can just put the MPP_three_times term directly inside the
-	exact tactic:
-
-	*)
+	We don't really need to assert
+  She_was_indeed_in_Sarnia separately;
+	we can just put the MPP_three_times
+  term directly inside the exact tactic: *)
 
 	Theorem Patricia_was_indeed_in_Sarnia_more_direct
 		: Patricia_was_in_Sarnia.
@@ -356,13 +379,10 @@ Module First_version_of_MPP_three_times.
 
 End First_version_of_MPP_three_times.
 
-(**
-
-Similarly, we don't really need to assert MPP7;
-we can just replace MPP7 with the term Pr4 (MPP6)
-inside the exact tactic:
-
-**)
+(** Similarly, we don't really need to
+    assert MPP7; we can just replace MPP7
+    with the term Pr4 (MPP6)
+    inside the exact tactic: **)
 
 Module Second_version_of_MPP_three_times.
 
@@ -403,8 +423,43 @@ Module Second_version_of_MPP_three_times.
 
 End Second_version_of_MPP_three_times.
 
-(**
+(** At this point, let me explain the Modules
+First_version_of_MPP_three_times
+and Second_version_of_MPP_three_times.
 
+Normally, once you have used a name,
+you cannot use it again.  So I could
+not have used the name MPP_three_times
+twice: once to refer to a theorem with
+a proof, and the other time to refer to
+the same theorem with a slightly
+different proof.
+
+The solution to this difficulty
+is to put one proof of MPP_three_times
+in a Module and the other definition of
+MPP_three_times in a second module.
+
+You can compare the difference between
+the two proofs of MPP_three_times in
+each module: the second proof does away
+with one of the assert tactics.
+
+You can also note that the two proofs of
+Patricia_was_indeed_in_Sarnia_more_direct
+appear identical; the only difference is
+in the proof of MPP_three_times.
+Patricia_was_indeed_in_Sarnia_more_direct
+depends in both cases on the Theorem
+MPP_three_times but not on the Proof of
+the Theorem.  This is completely normal
+in computer programming, and it is known
+as "abstraction".  MPP_three_times,
+the name of the Theorem, is the abstraction,
+and its Proof is the actual details
+that the name MPP_three_times hides.
+
+Now back to the Proof on MPP_three_times.
 We don't even need to assert MPP6 either;
 we can just replace MPP6 with the term Pr3 (MPP5)
 inside the exact tactic:
@@ -448,11 +503,16 @@ Module Third_version_of_MPP_three_times.
 
 End Third_version_of_MPP_three_times.
 
-(**
+(** Again, the Theorem
+Patricia_was_indeed_in_Sarnia_more_direct
+and its Proof in the
+Module Third_version_of_MPP_three_times
+are identical to its appearance in the
+first two Modules; MPP_three_times continues
+to work as before.
 
-We don't even need to separately assert MPP5 either:
-
-*)
+We don't even need to separately assert
+MPP5 either: *)
 
 Module Fourth_version_of_MPP_three_times.
 
@@ -489,12 +549,8 @@ Module Fourth_version_of_MPP_three_times.
 
 End Fourth_version_of_MPP_three_times.
 
-(**
-
-Coq allows us to abbreviate
-(P : Prop) (Q : Prop) (R : Prop) (S : Prop):
-
-*)
+(** Coq allows us to abbreviate
+(P : Prop) (Q : Prop) (R : Prop) (S : Prop): *)
 
 Module Fifth_version_of_MPP_three_times.
 
@@ -533,12 +589,16 @@ End Fifth_version_of_MPP_three_times.
 
 (**
 
-There is one final change that I want to make before leaving
-this example.  We can put the premises in MPP_three_times
-in any other order, just as long as they follow the
+So we have made a few changes to the Proof
+of the generic MPP_three_times Theorem
+and gotten it into a more direct form.
+
+There is one final change that I want to
+make before leaving this example.
+We can put the premises in MPP_three_times
+in any other order,
+just as long as they come after the
 declarations of P, Q, R, and S.
-Of course, we now have to rewrite the exact tactic
-that uses MPP_three_times.
 
 Putting Pr1 as the last premise may not make much difference,
 but it enables a surprise that I will show in a second.
@@ -560,7 +620,13 @@ Module Schönfinkel_version_of_MPP_three_times.
 
 	Qed.
 
-	Theorem Patricia_was_indeed_in_Sarnia
+  (** Because the parameters to MPP_three_times
+  are now in a different order, we have to
+  change the order of the arguments in
+	the Proof of the Theorem
+  Patricia_was_indeed_in_Sarnia_more_direct: *)
+
+	Theorem Patricia_was_indeed_in_Sarnia_more_direct
 		: Patricia_was_in_Sarnia.
 
 	Proof.
@@ -577,14 +643,14 @@ Module Schönfinkel_version_of_MPP_three_times.
 
 	Qed.
 
-	(**
-
-	As before, we have invoked MPP_three_times with eight arguments.
-	We can check that MPP_three_times has eight parameters #&#8212;#
-	P, Q, R, S, Pr2, Pr3, Pr4, and Pr1 #&#8212;#
-	and can therefore take eight arguments, like this:
-
-	*)
+	(** As before, we have invoked
+  MPP_three_times with eight arguments.
+	We can check that MPP_three_times
+  has eight parameters #&#8212;#
+	P, Q, R, S, Pr2, Pr3, Pr4, and Pr1
+  #&#8212;#
+	and can therefore take eight arguments,
+  like this: *)
 
 	Check MPP_three_times
 		: forall P Q R S : Prop,
@@ -592,12 +658,9 @@ Module Schönfinkel_version_of_MPP_three_times.
 			forall Pr3 : Q -> R,
 			forall Pr4 : R -> S, forall Pr1 : P, S.
 
-	(**
-
-	But here's the surprise: MPP_three_times can also be
-	invoked with only seven arguments!
-
-	*)
+	(** But here's the surprise:
+  MPP_three_times can also be
+	invoked with only seven arguments! *)
 
 	Check MPP_three_times
 		: forall P Q R S : Prop,
@@ -622,13 +685,12 @@ Module Schönfinkel_version_of_MPP_three_times.
 
 	Qed.
 
-	(**
-
-	What's going on?  Those of you who know about Moses Schönfinkel
-	and about the Curry-Howard Correspondence will have figured out
-	how this is even possible, or will figure it out from these hints:
-
-	*)
+	(** What's going on?
+  Those of you who know about Moses Schönfinkel
+	and about the Curry-Howard Correspondence
+  will have figured out
+	how this is even possible,
+  or will figure it out from these hints: *)
 
 	Check MPP_three_times
 		: forall P Q R S: Prop, (P -> Q) -> (Q -> R) -> (R -> S) -> P -> S.
@@ -647,18 +709,22 @@ verbose Theorem.  I've explored how to make the generic Theorem
 shorter, one change at a time.  And I've managed to throw in
 something to ponder.
 
-For the next article, I plan to write about types in Coq.
-
-*)
-
-End Article_3_Making_it_generic.
+For the next article, I plan to write about types in Coq. *)
 
 (** ** References
 
-Hardegree, G. M. (1999) "Symbolic Logic: A First Course."
+#&#185;# Institut national de recherche en
+sciences et technologies du numérique (Inria).
+"The Coq Proof Assistant."
+https://coq.inria.fr/
+
+#&#178;# Hardegree, G. M. (1999)
+"Symbolic Logic: A First Course."
 McGraw-Hill College.
 <https://courses.umass.edu/phil110-gmh/MAIN/IHome-5.htm>
+The terse example is exercise 1 of section 5.22.
 
 **)
 
+End Article_3_Making_it_generic.
 

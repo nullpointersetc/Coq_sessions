@@ -1,33 +1,27 @@
-(** * Article 6. Lists of things.
+(** printing  ->  #&#45;&#62;# **)
+(** printing  =>  #&#61;&#62;# **)
+(** printing  forall  #forall# **)
+(** * Article 6. Lists of things. *)
 
-#<blockquote>#
-"I think I've figured out what's wrong with my friends."
-#<br />&#8212; Starlight Glimmer&#185;</blockquote>#
-
-#<blockquote>#
-"I have a whole list of things that are wrong with your friends."
-#<br />&#8212; Trixie&#178;</blockquote>#
-
-As I write this article,
-the summer festivals have returned to Victoria
-Park in London, Ontario, after being cancelled
+(** As I write this article,
+some of the annual festivals have returned to
+London, Ontario, after being cancelled
 for the past two years due to lockdown.
-(Actually, one festival did come back in 2021.)
 And you will remember that we defined a date
 type in the preceding article, so we can use
 that type to represent the scheduled dates
 of these festivals.
 
-But the point of this article is to introduce
-how to represent lists in Coq.
 Many of these festivals are scheduled for
 more than one day.  This scheduling motivates
 what we will look at in this article:
 a type that represents more than one date,
 or if you will, a list of dates.
 
+The point of this article is to introduce
+how to represent lists in #Coq.&#185;#
 There is actually a type in Coq's standard
-library that can be used to represent a lists.
+library that can be used to represent a list.
 Nevertheless, I want to develop my own versions
 of lists.  I want to illustrate different
 problems and how these are handled when we
@@ -37,12 +31,9 @@ the standard library.
 As I have mentioned, the preceding article
 declared a Date type.  Instead of repeating
 that type here, I refer you to the preceding
-article.  But I write each article in my Coq
+#article.&#178;#  But I write each article in my Coq
 series as a vernacular file, so I also
-refer *Coq* to the preceding article as well:
-
-*)
-Add LoadPath "/home/darren/Coq_sessions/Articles" as Articles.
+refer #<em>Coq</em># to the preceding article as well: **)
 
 Load Article_5_Types_in_other_types.
 
@@ -55,8 +46,7 @@ Module Article_6_Lists_of_things.
 
 (** I will be making many attempts to define a
 type called List_of_dates.  So I need to
-put each attempt into its own Module.
-*)
+put each attempt into its own Module. *)
 
 (** ** First attempt: List of three dates *)
 
@@ -88,14 +78,14 @@ Module First_attempt.
 
     *)
 
-    Fail Definition First_date (dates : List_of_dates) : Date
+    Definition First_date (dates : List_of_dates) : Date
         := match dates
-        with Make_List (first) (_) (_) => first
+        with Make_List (the_first) (_) (_) => the_first
         end.
 
-    Fail Definition Second_date (dates : List_of_dates) : Date
+    Definition Second_date (dates : List_of_dates) : Date
         := match dates
-        with Make_List (_) (second) (_) => second
+        with Make_List (_) (the_second) (_) => the_second
         end.
 
     Fail Definition Third_date (dates : List_of_dates) : Date
@@ -103,44 +93,46 @@ Module First_attempt.
         with Make_List (_) (_) (third) => third
         end.
 
-    (**
+    (** The last definition fails for a very odd reason:
+    third is already defined as constructors of the type
+    Day_of_the_month, so instead of treating third as
+    a brand-new name in the pattern, Coq tries use the
+    existing name.  [Make_List] can only be constructed
+    with three Dates, but [third] is already
+    a [Day_of_the_Month].
 
-    These definitions all failed for a very odd reason:
-    first, second, and third are already defined as
-    constructors of the type Day_of_the_month,
-    so instead of treating them as brand-new names
-    for the new definitions, Coq tries use the
-    existing names.
-    Make_List takes complete dates, not days of the month only.
-    So Coq complains in each case that it "Found a
-    constructor of inductive type Day_of_the_Month
-    while a constructor of Date is expected."
+    One of the problems with this failed definition
+    is the error message that Coq displays:
+    [Found a constructor of inductive type Day_of_the_Month
+    while a constructor of Date is expected.]
+    This is a common problem with software development,
+    or rather with software developers.
+    The programmer knows what's wrong with what I typed,
+    but the programmer's message is what a programmer
+    would write.  The user who's trying to learn Coq,
+    however, might find this message confusing,
+    and probably find it unfriendly as well.
+    As a software developer "on the other side",
+    as it were, I have a lesson to learn here:
+    always try to make the error message as simple
+    and clear as possible.
 
-    The problem is that you, or somebody else,
-    could add a name earlier in the file,
-    or could add a name in another file that you have loaded
-    (like Article_5_Types_in_other_types)
-    and your Coq work fails.
-
-    I believe that, in order for a technology to mature,
-    it must be robust.  I have figured out a robust
-    method of declaring that a name is to represent
-    a parameter to a constructor, and that method is
-    to write (_ as name) instead of just (name).
-    That way, we can use the words first, second,
-    third to mean full dates instead of days of the month:
+    The other problem with this code is that it
+    depends on the code that I already imported earlier.
+    Sure, I could change the code to use a new name
+    like [the_third].  But the writer of the code
+    that got included by
+    [Load Article_5_Types_in_other_types]
+    and [Import Article_5_Types_in_other_types]
+    could change that code to define [the_third,]
+    or [the_first] or [the_second,] and then this
+    Coq file won't compile any more.
+    I have figured out a more robust method of declaring
+    a name that represents part of a pattern, and that
+    is to write [_ as third] instead of just [third]
+    in the pattern.
 
     *)
-
-    Definition First_date (dates : List_of_dates) : Date
-        := match dates
-        with Make_List (_ as first) (_) (_) => first
-        end.
-
-    Definition Second_date (dates : List_of_dates) : Date
-        := match dates
-        with Make_List (_) (_ as second) (_) => second
-        end.
 
     Definition Third_date (dates : List_of_dates) : Date
         := match dates
@@ -156,8 +148,9 @@ Module First_attempt.
         reflexivity.
     Qed.
 
-    (** But this type can only represent
-    three dates, no more (and no fewer). *)
+    (** But this type can only represent three dates.
+    It cannot represent four dates
+    and it cannot represent five dates. *)
 
     Fail Definition SunFest_2022 :=
         Make_List (Make_Date (Thursday) (July) (seventh) (Year2022))
@@ -172,16 +165,11 @@ Module First_attempt.
             (Make_Date (Sunday) (July) (thirty_first) (Year2022))
             (Make_Date (Monday) (August) (first) (Year2022)).
 
+    (** So let us abandon the first attempt,
+    and try to write a type that can represent
+    four dates or five dates, instead of just three. *)
+
 End First_attempt.
-
-(**
-
-The first problem we should fix is to allow
-lists of more dates to be represented.
-So let us abandon the first attempt, and
-try to resolve this problem in the second attempt.
-
-*)
 
 (** ** Second attempt: Three or four or five dates *)
 
@@ -194,15 +182,12 @@ Module Second_attempt.
         | Make_List (first : Date) (second : Date)
             (third : Date) (fourth : Date) (fifth : Date).
 
-    (**
-
-    Oops.  This failed because I added two more constructors
-    and gave them the same name.  This is not allowed in
-    Coq (unlike C++ and Java, where all constructors
-    for a class have the same name, specifically,
-    the name of the class being constructed).
-
-    *)
+    (**  Oops.  This failed because I tried to make a type
+    with three constructors and I gave them all the same name.
+    This is not allowed in Coq (unlike C++ and Java,
+    where all constructors for a class must have the same name
+    as the class to be constructed).
+    So I'll use different names: *)
 
     Inductive List_of_dates : Set :=
         Make_List (first : Date) (second : Date) (third : Date)
@@ -259,24 +244,17 @@ Module Second_attempt.
         reflexivity.
     Qed.
 
-    (**
-
-    Everything we tried in the first attempt
-    now works in the second attempt.
-    But if we need a list of two dates,
-    or a list of more than five dates,
-    we can't represent them in the current List_of_dates
-    type.  We are right back where we started.
+    (** Everything I tried in the first attempt now works
+    in the second attempt. But if we need a list of two dates,
+    or a list of six dates, we can't represent them in the
+    current List_of_dates type.  I am right back where we started.
     The obvious solution would be to add even more
     ways to construct a list, and we would have to
     modify First_date, Second_date, and Third_date.
 
-    Another problem is also evident in the definitions
-    of First_date, Second_date, and Third_date:
-    why did we not define Fourth_date and Fifth_date?
-    We could try defining them like this:
-
-    *)
+    Another problem is also evident from the definitions of
+    First_date, Second_date, and Third_date:
+    we also need a Fourth_date and Fifth_date: *)
 
     Fail Definition Fourth_date (dates : List_of_dates) : Date
         := match dates
@@ -289,39 +267,79 @@ Module Second_attempt.
         with Make_List_of_5 (_) (_) (_) (_) (_ as fifth) => fifth
         end.
 
-    (**
+    (** Coq replies with another error message:
+    [Non exhaustive pattern-matching:
+    no clause found for pattern Make_List _ _ _].
 
-    It does not make sense to define a "Fourth_date"
+    It does not make sense to define [Fourth_date]
     for a list of only three dates.
-    But Coq does not allow the above definition of Fourth_date.
-    It makes sense when you consider that Fourth_date
-    must have the type "List_of_dates -> Date",
-    or equivalently, "forall (dates : List_of_Dates), Date".
-    The bottom line is, you have to define Fourth_date
-    for all possible List_of_dates, even the ones with
-    three dates.  ("Fifth_date" has the same issue;
-    the only way to define Fifth_date for a list is when
-    the list has five dates.)
+    But in Coq, the type of [Fourth_date] is
+    [forall (dates : List_of_Dates), Date.]
+    As the word "forall" suggests, [Fourth_date]
+    must be able to take any List_of_Dates,
+    no matter if it has three dates or four dates
+    or five dates.  [Fifth_date] has the same problem;
+    the only sensible lists it can apply to are
+    those with five dates.
 
-    The simplest solution is to just define Fourth_date
-    and Fifth_date incorrectly for lists of three dates
-    (and Fifth_date for lists of four dates):
+    There are ways of declaring [Fourth_date]
+    so that you can only apply it to lists of four dates
+    and to lists of five date.
+    But for the present, I am going to change
+    the meaning of [Fourth_date] slightly
+    for all possible List_of_Dates.
+    For the lists of four dates and for the lists of
+    five dates, the [Fourth_date] is "some date."
+    For the lists of three dates, the [Fourth_date]
+    will be "not a date".
+    I can define a type that can be "some date"
+    or "not a date": *)
 
-    *)
+    Inductive Date_or_No_Date : Set :=
+        Some_Date (date : Date)
+        | No_Date.
 
-    Definition Fourth_date (dates : List_of_dates) : Date
+    (* Now [Fourth_date] can be defined: *)
+
+    Definition Fourth_date (dates : List_of_dates)
+        : Date_or_No_Date
         := match dates
-        with Make_List_of_4 (_) (_) (_) (_ as fourth) => fourth
-        | Make_List_of_5 (_) (_) (_) (_ as fourth) (_) => fourth
-        | Make_List (_) (_) (_ as third) => third
+        with Make_List_of_4 (_) (_) (_) (_ as fourth) => Some_Date (fourth)
+        | Make_List_of_5 (_) (_) (_) (_ as fourth) (_) => Some_Date (fourth)
+        | Make_List (_) (_) (_) => No_Date
         end.
 
-    Definition Fifth_date (dates : List_of_dates) : Date
+    (* Now I can also define [Fifth_date:] *)
+
+    Definition Fifth_date (dates : List_of_dates)
+        : Date_or_No_Date
         := match dates
-        with Make_List_of_5 (_) (_) (_) (_) (_ as fifth) => fifth
-        | Make_List (_) (_) (_ as third) => third
-        | Make_List_of_4 (_) (_) (_) (_ as fourth) => fourth
+        with Make_List_of_5 (_) (_) (_) (_) (_ as fifth) => Some_Date (fifth)
+        | Make_List (_) (_) (_) => No_Date
+        | Make_List_of_4 (_) (_) (_) (_) => No_Date
         end.
+
+    Example July_10th
+        : eq (Fourth_date (SunFest_2022))
+        (Some_Date (Make_Date (Sunday) (July) (tenth) (Year2022))).
+    Proof.
+        unfold SunFest_2022.
+        unfold Fourth_date.
+        reflexivity.
+    Qed.
+
+    Example August_1st
+        : eq (Fifth_date (London_RibFest_2022))
+        (Some_Date (Make_Date (Monday) (August) (first) (Year2022))).
+    Proof.
+        unfold London_RibFest_2022.
+        unfold Fifth_date.
+        reflexivity.
+    Qed.
+
+    (** Everything works so far.  Now, I'm going to
+    try solving the problem about lists of two dates,
+    and lists of six dates, and so on. *)
 
 End Second_attempt.
 
@@ -339,87 +357,188 @@ The ideas behind the third attempt are quite simple:
       together with another date to make a list
       of four dates.
 
-    - And so on, and so on, and so on.
+    - We can take a list of four dates and put it
+      together with another date to make a list
+      of five dates.
 
-We can express these ideas more simply,
-and more accurately, in these two ideas:
+    - And so on.
 
-    - We can make a list of two dates.
+We can collapse the construction of lists of three dates
+or more into a single idea:
 
     - We can take an existing list and
       put it together with another date
       to make a list that has one more date
       that the existing list.
 
-So here we go:
-
 *)
 
 Module Third_attempt.
 
     Inductive List_of_dates : Set :=
-        cons' (head : Date) (tail : Date)
+        cons2 (head : Date) (tail : Date)
         | cons (head : List_of_dates) (tail : Date).
 
-    (** (There is a tradition where "cons"
-    is the name of the operation that
-    constructs a list.) *)
+    (** (Using the name [cons] as the name of the constructor
+    of a larger list from a smaller list dates back to LISP.)
+
+    This is my first truly inductive type in this series.
+    What makes this List_of_dates inductive is that
+    one of the constructors takes a parameter of the
+    same type as the type we are constructing.
+    In particular,
+    to make a list of three dates, you must use
+    the [cons] constructor with an existing list
+    of two dates and with the third date.
+    To make a list of four dates, you must use
+    the [cons] constructor with an existing list
+    of three dates and with the fourth date. *)
 
     Definition Home_County_2022 :=
-        cons (cons' (Make_Date (Friday) (July) (fifteenth) (Year2022))
+        cons (cons2 (Make_Date (Friday) (July) (fifteenth) (Year2022))
                 (Make_Date (Saturday) (July) (sixteenth) (Year2022)))
             (Make_Date (Sunday) (July) (seventeenth) (Year2022)).
 
     Definition SunFest_2022 :=
-        cons (cons (cons' (Make_Date (Thursday) (July) (seventh) (Year2022))
+        cons (cons (cons2 (Make_Date (Thursday) (July) (seventh) (Year2022))
                     (Make_Date (Friday) (July) (eighth) (Year2022)))
                 (Make_Date (Saturday) (July) (ninth) (Year2022)))
             (Make_Date (Sunday) (July) (tenth) (Year2022)).
 
     Definition London_RibFest_2022 :=
-        cons (cons (cons (cons'
+        cons (cons (cons (cons2
                         (Make_Date (Thursday) (July) (twenty_eighth) (Year2022))
                         (Make_Date (Friday) (July) (twenty_ninth) (Year2022)))
                     (Make_Date (Saturday) (July) (thirtieth) (Year2022)))
                 (Make_Date (Sunday) (July) (thirty_first) (Year2022)))
             (Make_Date (Monday) (August) (first) (Year2022)).
 
+    Definition Western_Fair_2022 :=
+        cons (cons (cons (cons (cons (cons (cons (cons (cons2
+        (Make_Date (Friday)    (September) (ninth)          (Year2022))
+        (Make_Date (Saturday)  (September) (tenth)          (Year2022)))
+        (Make_Date (Sunday)    (September) (eleventh)       (Year2022)))
+        (Make_Date (Monday)    (September) (twelfth)        (Year2022)))
+        (Make_Date (Tuesday)   (September) (thirteenth)     (Year2022)))
+        (Make_Date (Wednesday) (September) (fourteenth)     (Year2022)))
+        (Make_Date (Thursday)  (September) (fifteenth)      (Year2022)))
+        (Make_Date (Friday)    (September) (sixteenth)      (Year2022)))
+        (Make_Date (Saturday)  (September) (seventeenth)    (Year2022)))
+        (Make_Date (Sunday)    (September) (eighteenth)     (Year2022)).
+
+    (* Now we can make lists of two dates.
+    ** But we need a different defintion for
+    ** [First_date] and [Second_date].
+    ** It's easy to define them for a list of two dates
+    ** (constructed with [cons2]):  just pull out the date.
+    ** But for a longer list, we need to pull out the smaller list
+    ** and then pull the date from the smaller list.
+    **
+    ** This means that we need to define First_date recursively,
+    ** and the definition of a recursive function must use the
+    ** command Fixpoint instead of Definition.
+    ** (I don't know why the command is called Fixpoint.) *)
+
+    Fixpoint First_date (dates : List_of_dates) : Date
+        := match dates
+        with cons2 (_ as first) (_) => first
+        | cons (_ as first_few) (_) => First_date (first_few)
+        end.
+
+    Fixpoint Second_date (dates : List_of_dates) : Date
+        := match dates
+        with cons2 (_) (_ as second) => second
+        | cons (_ as first_few) (_) => Second_date (first_few)
+        end.
+
+    (* But [Third_date] now has to be more complicated,
+    ** because for lists of two dates, [Third_date]
+    ** must be [No_Date.] *)
+
+    Inductive Date_or_No_Date : Set :=
+        Some_Date (date : Date)
+        | No_Date.
+
+    Fixpoint Third_date (dates : List_of_dates)
+        : Date_or_No_Date
+        := match dates
+        with cons2 (_) (_) => No_Date
+        | cons (cons2 (_) (_)) (_ as third) => Some_Date (third)
+        | cons (_ as first_few) (_) => Third_date (first_few)
+        end.
+
+    Fixpoint Fourth_date (dates : List_of_dates)
+        : Date_or_No_Date
+        := match dates
+        with cons2 (_) (_) => No_Date
+        | cons (cons2 (_) (_)) (_) => No_Date
+        | cons (cons (cons2 (_) (_)) (_)) (_ as fourth)
+            => Some_Date (fourth)
+        | cons (_ as first_few) (_) => Fourth_date (first_few)
+        end.
+
+    Fixpoint Fifth_date (dates : List_of_dates)
+        : Date_or_No_Date
+        := match dates
+        with cons2 (_) (_) => No_Date
+        | cons (cons2 (_) (_)) (_) => No_Date
+        | cons (cons (cons2 (_) (_)) (_)) (_) => No_Date
+        | cons (cons (cons (cons2 (_) (_)) (_)) (_)) (_ as fifth)
+            => Some_Date (fifth)
+        | cons (_ as first_few) (_) => Fifth_date (first_few)
+        end.
+
+    (* And to make sure that these work: *)
+
+    Example July_17th
+        : eq (Third_date (Home_County_2022))
+        (Some_Date (Make_Date (Sunday) (July) (seventeenth) (Year2022))).
+    Proof.
+        unfold Home_County_2022.
+        unfold Third_date.
+        reflexivity.
+    Qed.
+
+    Example July_10th
+        : eq (Fourth_date (SunFest_2022))
+        (Some_Date (Make_Date (Sunday) (July) (tenth) (Year2022))).
+    Proof.
+        unfold SunFest_2022.
+        unfold Fourth_date.
+        reflexivity.
+    Qed.
+
+    Example August_1st
+        : eq (Fifth_date (London_RibFest_2022))
+        (Some_Date (Make_Date (Monday) (August) (first) (Year2022))).
+    Proof.
+        unfold London_RibFest_2022.
+        unfold Fifth_date.
+        reflexivity.
+    Qed.
+
 End Third_attempt.
 
-Module Fourth_attempt.
-
-    Inductive List_of_dates : Set :=
-        cons' (head : Date) (tail : Date)
-        | cons (head: Date) (tail : List_of_dates).
-
-    Definition Home_County_2022 :=
-        cons (Make_Date (Friday) (July) (fifteenth) (Year2022))
-             (cons' (Make_Date (Saturday) (July) (sixteenth) (Year2022))
-                    (Make_Date (Sunday) (July) (seventeenth) (Year2022))).
-
-    Definition SunFest_2022 :=
-        cons (Make_Date (Thursday) (July) (seventh) (Year2022))
-             (cons (Make_Date (Friday) (July) (eighth) (Year2022))
-                   (cons' (Make_Date (Saturday) (July) (ninth) (Year2022))
-                          (Make_Date (Sunday) (July) (tenth) (Year2022)))).
-
-    Definition London_RibFest_2022 :=
-        cons (Make_Date (Thursday) (July) (twenty_eighth) (Year2022))
-            (cons (Make_Date (Friday) (July) (twenty_ninth) (Year2022))
-                 (cons (Make_Date (Saturday) (July) (thirtieth) (Year2022))
-                      (cons' (Make_Date (Sunday) (July) (thirty_first) (Year2022))
-                          (Make_Date (Monday) (August) (first) (Year2022))))).
-
-End Fourth_attempt.
+(** This article is already long, and I'm not even
+close to where I wanted to be at the end of it.
+I had planned on changing the type definition
+to be more focused on the start of the list
+instead of the end of the list.
+I had planned on handling the case where,
+instead of a list of dates, you only have one date.
+I had planned on handling the case where,
+instead of a date or a list of dates, you have no dates.
+But all of these will have to wait until the next article. *)
 
 (** ** References
 
-1. Haber, Josh, and Michael Vogel.
-"To Where and Back Again &mdash; Part 1".
-Episode 142 of "My Little Pony: Friendship is Magic."
-Vancouver, B.C.: DHX Studios, 2016.  Starlight Glimmer voiced by Kelly Sheridan.
+#&#185;# Institut national de recherche en
+sciences et technologies du numérique (Inria).
+"The Coq Proof Assistant."
+https://coq.inria.fr/
 
-2. Ibid. Trixie voiced by Kathleen Barr.
+#&#178;# "Article 5. Types in other types."
+
 *)
 
 End Article_6_Lists_of_things.
