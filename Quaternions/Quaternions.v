@@ -1,14 +1,8 @@
 Require Coq.QArith.QArith.
-Require Coq.ZArith.ZArith.
-Require Coq.ZArith.BinIntDef.
-Require Coq.Numbers.BinNums.
 
 Module Quaternions.
 
     Import Coq.QArith.QArith.
-    Import Coq.ZArith.ZArith.
-    Import Coq.ZArith.BinIntDef.
-    Import Coq.Numbers.BinNums.
 
     Inductive H : Set :=
         H_make (w x y z : Q) : H.
@@ -94,165 +88,81 @@ Module Quaternions.
     Section Required_properties.
 
         Definition Q_zero_times_zero_equals_zero
-            := Qmult_0_l (0).
+            : Qeq (Qmult (0%Q) (0%Q)) (0%Q)
+            := Qmult_0_l (0%Q).
+
+        Definition Q_zero_equals_zero_times_zero
+            : Qeq (0%Q) (Qmult (0%Q) (0%Q))
+            := Qeq_sym (Qmult (0%Q) (0%Q))
+                (0%Q)
+                (Q_zero_times_zero_equals_zero).
 
         Definition Q_zero_times_one_equals_zero
-            := Qmult_0_l (1).
+            : Qeq (Qmult (0%Q) (1%Q)) (0%Q)
+            := Qmult_0_l (1%Q).
+
+        Definition Q_zero_equals_zero_times_one
+            : Qeq (0%Q) (Qmult (0%Q) (1%Q))
+            := Qeq_sym (Qmult (0%Q) (1%Q))
+                (0%Q)
+                (Q_zero_times_one_equals_zero).
 
         Definition Q_one_times_zero_equals_zero
-            := Qmult_1_l (0).
+            : Qeq (Qmult (1%Q) (0%Q)) (0%Q)
+            := Qmult_1_l (0%Q).
+
+        Definition Q_zero_equals_one_times_zero
+            : Qeq (0%Q) (Qmult (1%Q) (0%Q))
+            := Qeq_sym (Qmult (1%Q) (0%Q))
+                (0%Q)
+                (Q_one_times_zero_equals_zero).
 
         Definition Q_one_times_one_equals_one
-            := Qmult_1_l (1).
+            : Qeq (Qmult (1%Q) (1%Q)) (1%Q)
+            := Qmult_1_l (1%Q).
+
+        Definition Q_one_equals_one_times_one
+            : Qeq (1%Q) (Qmult (1%Q) (1%Q))
+            := Qeq_sym (Qmult (1%Q) (1%Q))
+                (1%Q)
+                (Q_one_times_one_equals_one).
 
         Lemma i_squared_equals_negative_one
             : H_eq (H_mul i i) (H_neg_one).
         Proof.
-            unfold H_neg_one.
-            unfold H_mul.
-            unfold i.
-            unfold H_from.
-            unfold H_eq.
-            unfold Qminus.
+            assert (Real_part := eq_refl
+                : 0*0 - 1*1 - 0*0 - 0*0 == -1).
 
-            assert (Lem1 :
-                Qeq (Qopp (0*0)) (0)).
-                unfold Qmult.
-                unfold Qnum.
-                unfold Qden.
-                rewrite (Coq.PArith.BinPos.Pos.mul_1_l (1%positive)).
-                rewrite (Z.mul_0_l (0)).
-                unfold Qopp.
-                unfold Qeq.
-                unfold Qnum.
-                unfold Qden.
-                unfold Z.opp.
-                reflexivity.
+            assert (I_coeff_part := eq_refl
+                : 0*1 + 1*0 + 0*0 - 0*0 == 0).
 
+            assert (J_coeff_part := eq_refl
+                : 0*0 - 1*0 + 0*0 + 0*1 == 0).
 
-rewrite (P.mul_1_l (1)).
-                unfold Qeq.
+            assert (K_coeff_part := eq_refl
+                : 0*0 + 1*0 - 0*1 + 0*1 == 0).
 
-        assert (QXXXXX : Qeq (0 + - (1) + 0 + 0)
-                             (0 + - (1) + 0))
-            by exact (Qplus_0_r (0 + - (1) + 0)).
+            exact (conj (conj (Real_part)
+                              (I_coeff_part))
+                        (conj (J_coeff_part)
+                              (K_coeff_part))).
+        Qed.
 
+        Theorem Add_is_commutative :
+            forall (left : H) (right : H),
+            H_eq (H_plus left right)
+                 (H_plus right left).
+        Proof.
+            intro left.
+            destruct left as [w_left x_left y_left z_left].
+            intro right.
+            destruct right as [w_right x_right y_right z_right].
 
-        assert (QXXXX : Qeq (0 + - (1) + 0)
-                            (0 + - (1)))
-         by exact (Qplus_0_r   (0 + - (1))).
-
-        assert (QXXXXXX : Qeq (0 + - (1) + 0 + 0)
-                              (0 + - (1)))
-         by exact (Qeq_trans (0 + - (1) + 0 + 0)
-                          (0 + - (1) + 0)
-                          (0 + - (1))
-                          (QXXXXX) (QXXXX)).
-
-        assert (QY : eq ((0:Q) * (1:Q))
-                     (0#1)) by reflexivity.
-
-        assert (QYY : eq ((1:Q) * (0:Q))
-                     (0#1)) by reflexivity.
-
-        rewrite QY.
-        rewrite QYY.
-
-        assert (QYYY := Qplus_0_r (0 + 0 + 0)).
-        assert (QYYYY := Qplus_0_r (0 + 0)).
-        assert (QYYYYY := Qplus_0_r (0)).
-        assert (QYYYYYY := Qeq_trans
-                       (0+0+0+0) (0+0+0) (0+0)
-                       (QYYY) (QYYYY)).
-
-        assert (QYYYYYYY := Qeq_trans
-                       (0+0+0+0) (0+0) (0)
-                       (QYYYYYY) (QYYYYY)).
-
-        assert (QZZ : Qeq (Qopp 0) (0))
-           by reflexivity.
-
-        pose (QZZZ := Qopp 0).
-
-        assert (QZZZZ := Qplus_0_l (QZZZ)).
-        assert (QZZZZZ := Qplus_0_r
-               (0 + QZZZ)).
-        assert (QZZZZZZ := Qplus_0_r
-               (0 + QZZZ + 0)).
-
-        assert (QZZZZZZZ := Qeq_trans
-                (0 + QZZZ + 0 + 0)
-                (0 + QZZZ + 0)
-                (0 + QZZZ)
-                (QZZZZZZ) (QZZZZZ)).
-
-        assert (QZZZZZZZZ := Qeq_trans
-                (0 + QZZZ + 0 + 0)
-                (0 + QZZZ)
-                (QZZZ) (QZZZZZZZ) (QZZZZ)).
-
-        assert (QZZZZZZZZZ := Qeq_trans
-                (0 + QZZZ + 0 + 0)
-                (QZZZ)
-                (0) (QZZZZZZZZ) (QZZ)).
-
-        assert (QA := Qplus_0_r (0+0+-0)).
-        assert (QAA := Qplus_assoc
-                      (0) (0) (-0)).
-        assert (QAAA := Qplus_0_l (0+-0)).
-        assert (QAAAA := Qplus_0_l (-0)).
-        assert (QAAAXA := Qeq_trans
-                     (0 + - 0)
-                     (- 0)
-                     (0) (QAAAA) (QZZ)).
-        assert (QAAAXAA := Qeq_trans
-                     (0 + (0 + - 0))
-                     (0 + - 0)
-                     (0) (QAAA) QAAAXA).
-        assert (QAAAXAAA := Qeq_sym
-                    (0 + (0 + - 0))
-                    (0 + 0 + - 0) (QAA )    ).
-        assert (QAAAXAAAX := Qeq_trans
-                    (0 + 0 + - 0)
-                    (0 + (0 + - 0))
-                    (0)
-                    (QAAAXAAA) (QAAAXAA)).
-        assert (QAAAXAAAXA := Qeq_trans
-                    (0 + 0 + - 0 + 0)
-                    (0 + 0 + - 0)
-                    (0)
-                    (QA) (QAAAXAAAX)).
-        assert (QB := conj (QXXXXXX)
-                           (QYYYYYYY)).
-        assert (QC := conj (QZZZZZZZZZ)
-                           (QAAAXAAAXA)).
-        assert (QD := conj (QB) (QC)).
-        exact QD.
-Qed.
-
-    Theorem Add_is_commutative :
-        forall (left : H) (right : H),
-        H_eq (H_plus left right) (H_plus right left).
-
-    Proof.
-        intro left.
-        destruct left as [w_left x_left y_left z_left].
-        intro right.
-        destruct right as [w_right x_right y_right z_right].
-        unfold H_plus.
-        unfold H_eq.
-
-        assert (QA := Qplus_comm
-                  w_left  w_right).
-        assert (QB := Qplus_comm
-                  x_left  x_right).
-        assert (QC := Qplus_comm
-                  y_left  y_right).
-        assert (QD := Qplus_comm
-                  z_left  z_right).
-        assert (QE := conj(conj QA QB)(conj QC QD)).
-        exact QE.
-    Qed.
+            exact (conj (conj (Qplus_comm (w_left) (w_right))
+                              (Qplus_comm (x_left) (x_right)))
+                        (conj (Qplus_comm (y_left) (y_right))
+                              (Qplus_comm (z_left) (z_right)))).
+        Qed.
 (*
     Theorem Add_is_associative:
         forall (left: H) (middle: H) (right: H),
@@ -361,9 +271,4 @@ Qed.
     End Required_properties.
 
 End Quaternions.
-
-Print Quaternions.H.
-
-Print QArith_base.Qopp.
-
 
